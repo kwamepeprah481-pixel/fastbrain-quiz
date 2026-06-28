@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#f8f7fc;--surface:#fff;--card:#fff;--border:#e1deed;--border2:#c7c3d3;--text:#121212;--muted:#625e6e;--faint:#8e8a9a;--accent:#0891b2;--accent-bg:#ecfeff;--accent-light:#cffafe;--accent2:#0f973d;--accent2-bg:#eafaf0;--success:#0f7b4a;--success-bg:#ebf8f1;--danger:#d83f55;--danger-bg:#fef1f0;--warn:#b45309;--warn-bg:#fffbeb;--shadow:0 1px 4px rgba(18,18,18,.12);--shadow-md:0 1px 8px rgba(18,18,18,.15);--shadow-lg:0 12px 32px rgba(18,18,18,.12);--radius:8px;--radius-lg:16px;}
+body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+.app{max-width:960px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+.header{display:flex;align-items:center;gap:14px;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.logo{width:46px;height:46px;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--accent),#0e7490);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 4px 12px rgba(8,145,178,.3);}
+.header h1{font-family:'Schibsted Grotesk',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.3px;}
+.header p{font-size:13px;color:var(--muted);margin-top:2px;font-weight:400;}
+.tabs{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.tab{background:none;border:1px solid var(--border);border-radius:44px;padding:8px 20px;font-family:'Schibsted Grotesk',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;color:var(--text);}
+.tab:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+.panel{display:none;}.panel.active{display:block;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s;}
+.card:hover{border-color:var(--border2);box-shadow:var(--shadow-md);}
+.card h3{font-family:'Schibsted Grotesk',sans-serif;font-size:17px;font-weight:700;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);letter-spacing:-.2px;}
+label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text);text-transform:uppercase;letter-spacing:.4px;}
+input,select,textarea{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-family:'Schibsted Grotesk',sans-serif;font-size:13px;margin-bottom:12px;outline:none;transition:border-color .15s,box-shadow .15s;background:#fff;color:var(--text);}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(8,145,178,.12);}
+textarea{min-height:80px;resize:vertical;}
+.btn{background:var(--accent);border:none;border-radius:44px;padding:10px 24px;font-family:'Schibsted Grotesk',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:all .2s;box-shadow:0 2px 6px rgba(8,145,178,.25);}
+.btn:hover{background:#0e7490;transform:translateY(-1px);box-shadow:0 4px 12px rgba(8,145,178,.3);}
+.btn:active{transform:translateY(0);}
+.btn-sm{background:none;border:1px solid var(--border);border-radius:44px;padding:6px 16px;font-family:'Schibsted Grotesk',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;color:var(--text);}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.btn-sm.danger:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+.btn-sm.success{border-color:var(--success);color:var(--success);}
+.btn-sm.success:hover{background:var(--success-bg);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+td{padding:10px 12px;border-bottom:1px solid var(--border);}
+tr:hover td{background:var(--accent-bg);}
+.status{display:inline-block;padding:3px 10px;border-radius:44px;font-size:10px;font-weight:700;letter-spacing:.3px;}
+.status.admin{background:var(--accent-bg);color:var(--accent);}
+.status.user{background:var(--bg);color:var(--muted);}
+.msg{font-size:13px;padding:10px 16px;border-radius:var(--radius);margin-bottom:12px;display:none;font-weight:500;}
+.msg.ok{background:var(--success-bg);color:var(--success);border:1px solid #a7f3d0;display:block;}
+.msg.err{background:var(--danger-bg);color:var(--danger);border:1px solid #fca5a5;display:block;}
+.q-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.8rem;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.q-item .qi-text{font-size:13px;flex:1;}
+.q-item .qi-actions{display:flex;gap:4px;}
+.user-info{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.user-info span{font-size:12px;font-weight:600;}
+.user-info .logout-btn{background:none;border:1.5px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);font-family:'Inter',sans-serif;}
+.user-info .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+#import-data textarea{min-height:200px;font-family:monospace;font-size:12px;}
+.quiz-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+.full-width{grid-column:1/-1;}
+.question-edit{margin-top:10px;}
+.question-edit .qe-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;align-items:end;}
+.question-edit .qe-row label{margin-bottom:2px;}
+.question-edit .qe-row input{margin-bottom:0;}
+.question-edit .qe-opt-row{display:flex;gap:6px;margin-bottom:4px;}
+.question-edit .qe-opt-row input{flex:1;margin-bottom:0;}
+.question-edit .qe-ans-row{display:flex;align-items:center;gap:8px;margin:4px 0 6px;}
+.question-edit .qe-ans-row label{margin-bottom:0;}
+.question-edit .qe-ans-row select{width:auto;margin-bottom:0;}
+.question-edit .qe-actions{display:flex;gap:4px;justify-content:flex-end;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="logo">⚙️</div>
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>JHS QuizMaster — Manage Subjects, Quizzes & Users</p>
+    </div>
+    <div class="user-info" id="admin-user-info"></div>
+  </header>
+
+  <div id="admin-msg" class="msg"></div>
+
+  <div class="tabs" id="admin-tabs">
+    <button class="tab active" onclick="switchTab('subjects')">📚 Subjects</button>
+    <button class="tab" onclick="switchTab('quizzes')">📝 Quizzes</button>
+    <button class="tab" onclick="switchTab('users')">👥 Users</button>
+    <button class="tab" onclick="switchTab('materials')">📄 Materials</button>
+    <button class="tab" onclick="switchTab('import')">📥 Import</button>
+    <button class="tab" onclick="switchTab('logs')">📋 Logs</button>
+    <button class="tab" onclick="window.open('/','_blank')">🏠 Home</button>
+  </div>
+
+  <div class="panel active" id="panel-subjects">
+    <div class="card">
+      <h3>Add / Edit Subject</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
+        <div><label>Subject ID</label><input id="subj-id" placeholder="e.g. eng, math"></div>
+        <div><label>Name</label><input id="subj-name" placeholder="e.g. English Language"></div>
+        <div><label>Icon (emoji)</label><input id="subj-icon" placeholder="📖" value="📘"></div>
+        <div><label>Color Class</label><input id="subj-cls" placeholder="eng"></div>
+        <div class="full-width"><label>Description</label><input id="subj-desc" placeholder="Brief description"></div>
+      </div>
+      <button class="btn" onclick="saveSubject()">Save Subject</button>
+    </div>
+    <div class="card">
+      <h3>Existing Subjects</h3>
+      <div id="subjects-list">Loading...</div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-quizzes">
+    <div class="card">
+      <h3>Create / Edit Quiz</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
+        <div><label>Quiz ID</label><input id="quiz-id" placeholder="e.g. e3"></div>
+        <div><label>Subject</label><select id="quiz-subj"></select></div>
+        <div class="full-width"><label>Title</label><input id="quiz-title" placeholder="e.g. English Language — Set C"></div>
+        <div><label>Description</label><input id="quiz-desc" placeholder="40 questions · Grammar"></div>
+        <div><label>Difficulty</label><select id="quiz-diff"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
+      </div>
+      <div class="question-edit">
+        <p style="font-weight:600;font-size:13px;margin:10px 0 6px;">Questions <span id="q-count">(0)</span></p>
+        <div id="questions-container"></div>
+        <button class="btn-sm" onclick="addQuestion()">+ Add Question</button>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;">
+        <button class="btn" onclick="saveQuiz()">Save Quiz</button>
+        <button class="btn-sm" onclick="clearQuizForm()">Clear Form</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>All Quizzes</h3>
+      <div id="quizzes-list">Loading...</div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-users">
+    <div class="card">
+      <h3>Add User</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
+        <div><label>Email</label><input id="new-user-email" placeholder="user@example.com"></div>
+        <div><label>Username</label><input id="new-user-username" placeholder="username"></div>
+        <div><label>Password</label><input id="new-user-password" type="password" placeholder="min 4 chars"></div>
+        <div><label>Role</label><select id="new-user-role"><option value="user">User</option><option value="admin">Admin</option></select></div>
+      </div>
+      <button class="btn" onclick="createUser()">Add User</button>
+    </div>
+    <div class="card">
+      <h3>Existing Users</h3>
+      <div id="users-list">Loading...</div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-materials">
+    <div class="card">
+      <h3>🚀 Auto-Generate Everything</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Upload a .docx/.pdf file and the system will auto-create a subject + quiz + questions in one click.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
+        <div><label>Quiz Title</label><input id="auto-title" placeholder="e.g. Science Notes Ch 1"></div>
+        <div><label>Subject</label><select id="auto-subj"><option value="">-- Create New --</option></select></div>
+        <div><label>New Subject Name (if creating)</label><input id="auto-subj-name" placeholder="e.g. Integrated Science"></div>
+        <div><label>Difficulty</label><select id="auto-diff"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label>File (.docx, .pdf)</label>
+        <input type="file" id="auto-file" accept=".docx,.doc,.pdf" style="padding:6px;font-size:13px;">
+      </div>
+      <button class="btn" onclick="autoGenerate()" style="background:var(--success);">⚡ Auto-Generate Quiz</button>
+      <div id="auto-progress" style="margin-top:8px;font-size:13px;color:var(--muted);display:none;">Processing...</div>
+    </div>
+
+    <div class="card">
+      <h3>📄 Upload & Review</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Upload .docx or .pdf files to extract text, review detected questions, then manually generate a quiz.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
+        <div><label>Title</label><input id="mat-title" placeholder="e.g. English Grammar Notes"></div>
+        <div><label>Subject</label><select id="mat-subj"></select></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label>File (.docx, .pdf)</label>
+        <input type="file" id="mat-file" accept=".docx,.doc,.pdf" style="padding:6px;font-size:13px;">
+      </div>
+      <button class="btn" onclick="uploadMaterial()">Upload & Parse</button>
+      <div id="mat-progress" style="margin-top:8px;font-size:13px;color:var(--muted);display:none;">Processing...</div>
+    </div>
+
+    <div id="mat-parsed-panel" style="display:none;">
+      <div class="card">
+        <h3>Extracted Content Preview</h3>
+        <div id="mat-content-preview" style="font-size:13px;line-height:1.6;max-height:300px;overflow-y:auto;background:var(--bg);padding:12px;border-radius:8px;border:1px solid var(--border);white-space:pre-wrap;"></div>
+      </div>
+
+      <div class="card">
+        <h3>Detected Questions <span id="mat-detected-count"></span></h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Review and edit detected questions, then generate a quiz. Unchecked questions will be skipped.</p>
+        <div id="mat-questions-preview" style="max-height:500px;overflow-y:auto;"></div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
+          <div><label>Quiz ID</label><input id="mat-quiz-id" placeholder="e.g. eng-auto-1"></div>
+          <div><label>Quiz Title</label><input id="mat-quiz-title" placeholder="Auto-generated from material"></div>
+          <div><label>Description</label><input id="mat-quiz-desc" placeholder="Generated from uploaded material"></div>
+          <div><label>Difficulty</label><select id="mat-quiz-diff"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button class="btn" onclick="generateQuizFromMaterial()">Generate Quiz</button>
+          <button class="btn-sm" onclick="document.getElementById('mat-parsed-panel').style.display='none'">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Uploaded Materials</h3>
+      <div id="materials-list">Loading...</div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-import">
+    <div class="card">
+      <h3>Bulk Import Quiz Data</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Paste JSON data matching the structure: <code>{subjects: [...], quizzes: {...}}</code></p>
+      <textarea id="import-data" placeholder='{"subjects":[...],"quizzes":{...}}'></textarea>
+      <button class="btn" onclick="bulkImport()">Import Data</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-logs">
+    <div class="card">
+      <h3>Admin Activity Logs</h3>
+      <div id="logs-list">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin + '/api';
+let questionsData = [];
+let editingQuizId = null;
+
+function getToken() { return localStorage.getItem('token'); }
+
+function setMsg(text, type) {
+  const el = document.getElementById('admin-msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  el.style.display = '';
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+async function api(path, opts = {}) {
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}), ...opts.headers };
+  const res = await fetch(API + path, { ...opts, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+async function checkAdmin() {
+  const token = getToken();
+  if (!token) { window.location.href = '/'; return; }
+  try {
+    const user = await api('/auth/me');
+    if (user.role !== 'admin') { window.location.href = '/'; return; }
+    document.getElementById('admin-user-info').innerHTML = `<span>${user.username}</span><button class="logout-btn" onclick="localStorage.removeItem('token');window.location.href='/'">Logout</button>`;
+    return user;
+  } catch (e) {
+    localStorage.removeItem('token');
+    window.location.href = '/';
+  }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab[onclick*="${name}"]`).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'subjects') loadSubjects();
+  if (name === 'quizzes') { loadSubjectsDropdown(); loadQuizzes(); }
+  if (name === 'users') loadUsers();
+  if (name === 'materials') { loadSubjectsDropdown(); loadMaterials(); }
+  if (name === 'logs') loadLogs();
+}
+
+async function loadSubjects() {
+  try {
+    const subs = await api('/subjects');
+    document.getElementById('subjects-list').innerHTML = subs.length === 0 ? '<p style="color:var(--muted)">No subjects yet.</p>' :
+      `<div class="table-wrap"><table><tr><th>ID</th><th>Name</th><th>Icon</th><th>Quizzes</th><th></th></tr>${subs.map(s => `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.icon || ''}</td><td>${(s.quizzes||[]).length}</td><td><button class="btn-sm" onclick='editSubject(${JSON.stringify(s).replace(/'/g,"\\'")})'>Edit</button> <button class="btn-sm danger" onclick="deleteSubject('${s.id}')">Delete</button></td></tr>`).join('')}</table></div>`;
+  } catch (e) { document.getElementById('subjects-list').innerHTML = '<p style="color:var(--danger)">Error: ' + e.message + '</p>'; }
+}
+
+function editSubject(s) {
+  document.getElementById('subj-id').value = s.id;
+  document.getElementById('subj-name').value = s.name;
+  document.getElementById('subj-icon').value = s.icon || '';
+  document.getElementById('subj-cls').value = s.color_class || '';
+  document.getElementById('subj-desc').value = s.description || '';
+}
+
+async function saveSubject() {
+  const id = document.getElementById('subj-id').value.trim();
+  const name = document.getElementById('subj-name').value.trim();
+  if (!id || !name) { setMsg('Subject ID and Name are required', 'err'); return; }
+  try {
+    await api('/admin/subjects', { method: 'POST', body: JSON.stringify({
+      id, name, icon: document.getElementById('subj-icon').value, description: document.getElementById('subj-desc').value, color_class: document.getElementById('subj-cls').value
+    })});
+    setMsg('Subject saved!', 'ok');
+    loadSubjects();
+  } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function deleteSubject(id) {
+  if (!confirm('Delete subject and all its quizzes?')) return;
+  try { await api('/admin/subjects/' + id, { method: 'DELETE' }); setMsg('Subject deleted', 'ok'); loadSubjects(); } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function loadSubjectsDropdown() {
+  try {
+    const subs = await api('/subjects');
+    const opts = subs.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    document.getElementById('quiz-subj').innerHTML = opts;
+    document.getElementById('mat-subj').innerHTML = opts;
+    document.getElementById('auto-subj').innerHTML = '<option value="">-- Create New --</option>' + opts;
+  } catch (e) {}
+}
+
+async function loadQuizzes() {
+  try {
+    const quizzes = await api('/admin/quizzes');
+    document.getElementById('quizzes-list').innerHTML = quizzes.length === 0 ? '<p style="color:var(--muted)">No quizzes yet.</p>' :
+      `<div class="table-wrap"><table><tr><th>ID</th><th>Title</th><th>Subject</th><th>Difficulty</th><th>Questions</th><th></th></tr>${quizzes.map(q => `<tr><td>${q.id}</td><td>${q.title}</td><td>${q.subject_name}</td><td>${q.difficulty}</td><td>${q.question_count || 0}</td><td><button class="btn-sm" onclick="editQuiz('${q.id}')">Edit</button> <button class="btn-sm danger" onclick="deleteQuiz('${q.id}')">Delete</button></td></tr>`).join('')}</table></div>`;
+  } catch (e) { document.getElementById('quizzes-list').innerHTML = '<p style="color:var(--danger)">Error: ' + e.message + '</p>'; }
+}
+
+function addQuestion(qData) {
+  const idx = questionsData.length;
+  questionsData.push(qData || { q: '', o: ['', '', '', ''], a: 0 });
+  renderQuestions();
+}
+
+function removeQuestion(idx) {
+  questionsData.splice(idx, 1);
+  renderQuestions();
+}
+
+function updateQuestionField(idx, field, value) {
+  if (field === 'q') questionsData[idx].q = value;
+  else if (field === 'a') questionsData[idx].a = parseInt(value);
+}
+
+function updateOption(idx, optIdx, value) {
+  questionsData[idx].o[optIdx] = value;
+}
+
+function renderQuestions() {
+  const container = document.getElementById('questions-container');
+  document.getElementById('q-count').textContent = `(${questionsData.length})`;
+  if (questionsData.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--muted)">No questions added yet.</p>';
+    return;
+  }
+  container.innerHTML = questionsData.map((q, i) => `
+    <div class="q-item">
+      <div class="qi-text"><strong>Q${i+1}:</strong> ${q.q || '(empty)'}</div>
+      <div class="qi-actions">
+        <button class="btn-sm" onclick="editQuestion(${i})">Edit</button>
+        <button class="btn-sm danger" onclick="removeQuestion(${i})">×</button>
+      </div>
+    </div>`).join('');
+}
+
+function editQuestion(idx) {
+  const q = questionsData[idx];
+  const html = `
+    <div id="qe-editor-${idx}" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;margin:8px 0;">
+      <div class="qe-row full-width"><label>Question</label><input id="qe-q-${idx}" value="${escHtml(q.q)}" onchange="updateQuestionField(${idx},'q',this.value)" oninput="updateQuestionField(${idx},'q',this.value)"></div>
+      ${q.o.map((o, oi) => `<div class="qe-opt-row"><label>Option ${['A','B','C','D'][oi]}</label><input value="${escHtml(o)}" onchange="updateOption(${idx},${oi},this.value)" oninput="updateOption(${idx},${oi},this.value)"></div>`).join('')}
+      <div class="qe-ans-row"><label>Correct Answer:</label><select onchange="updateQuestionField(${idx},'a',this.value)">
+        ${q.o.map((_, oi) => `<option value="${oi}" ${q.a === oi ? 'selected' : ''}>${['A','B','C','D'][oi]}</option>`).join('')}
+      </select></div>
+      <div class="qe-actions">
+        <button class="btn-sm" onclick="doneEditing(${idx})">Done</button>
+        <button class="btn-sm danger" onclick="removeQuestion(${idx})">Remove</button>
+      </div>
+    </div>`;
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  for (let i = 0; i < questionsData.length; i++) {
+    if (i === idx) {
+      container.insertAdjacentHTML('beforeend', html);
+    } else {
+      const qd = questionsData[i];
+      container.insertAdjacentHTML('beforeend', `<div class="q-item"><div class="qi-text"><strong>Q${i+1}:</strong> ${escHtml(qd.q) || '(empty)'}</div><div class="qi-actions"><button class="btn-sm" onclick="editQuestion(${i})">Edit</button><button class="btn-sm danger" onclick="removeQuestion(${i})">×</button></div></div>`);
+    }
+  }
+}
+
+function doneEditing(idx) {
+  const el = document.getElementById('qe-editor-' + idx);
+  if (el) el.style.display = 'none';
+  renderQuestions();
+}
+
+async function saveQuiz() {
+  const id = document.getElementById('quiz-id').value.trim();
+  const subject_id = document.getElementById('quiz-subj').value;
+  const title = document.getElementById('quiz-title').value.trim();
+  if (!id || !title) { setMsg('Quiz ID and Title are required', 'err'); return; }
+  if (questionsData.length === 0) { setMsg('Add at least one question', 'err'); return; }
+  const valid = questionsData.every(q => q.q && q.o.every(o => o));
+  if (!valid) { setMsg('All questions must have text and all 4 options filled', 'err'); return; }
+  try {
+    const quizData = {
+      id, subject_id, title, description: document.getElementById('quiz-desc').value,
+      difficulty: document.getElementById('quiz-diff').value,
+      questions: questionsData.map(q => ({ q: q.q, o: [...q.o], a: q.a }))
+    };
+    await api('/admin/quizzes', { method: 'POST', body: JSON.stringify(quizData) });
+    setMsg('Quiz saved!', 'ok');
+    clearQuizForm();
+    loadQuizzes();
+  } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function editQuiz(quizId) {
+  try {
+    const quiz = await api('/quizzes/' + quizId);
+    document.getElementById('quiz-id').value = quiz.id;
+    document.getElementById('quiz-subj').value = quiz.subject_id;
+    document.getElementById('quiz-title').value = quiz.title;
+    document.getElementById('quiz-desc').value = quiz.description || '';
+    document.getElementById('quiz-diff').value = quiz.difficulty;
+    questionsData = quiz.questions.map(q => ({
+      q: q.question_text,
+      o: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+      a: q.answer
+    }));
+    renderQuestions();
+    switchTab('quizzes');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function deleteQuiz(id) {
+  if (!confirm('Delete this quiz?')) return;
+  try { await api('/admin/quizzes/' + id, { method: 'DELETE' }); setMsg('Quiz deleted', 'ok'); loadQuizzes(); } catch (e) { setMsg(e.message, 'err'); }
+}
+
+function clearQuizForm() {
+  document.getElementById('quiz-id').value = '';
+  document.getElementById('quiz-title').value = '';
+  document.getElementById('quiz-desc').value = '';
+  document.getElementById('quiz-diff').value = 'medium';
+  questionsData = [];
+  renderQuestions();
+}
+
+async function loadUsers() {
+  try {
+    const users = await api('/admin/users');
+    document.getElementById('users-list').innerHTML = `<div class="table-wrap"><table><tr><th>ID</th><th>Email</th><th>Username</th><th>Role</th><th>Joined</th><th></th></tr>${users.map(u => `<tr><td>${u.id}</td><td>${u.email}</td><td>${u.username}</td><td><span class="status ${u.role}">${u.role}</span></td><td>${new Date(u.created_at).toLocaleDateString()}</td><td style="white-space:nowrap;">${u.role === 'user' ? `<button class="btn-sm success" onclick="makeAdmin(${u.id})">Make Admin</button> ` : `<button class="btn-sm" onclick="makeUser(${u.id})">Remove Admin</button> `}<button class="btn-sm danger" onclick="deleteUser(${u.id})">Delete</button></td></tr>`).join('')}</table></div>`;
+  } catch (e) { document.getElementById('users-list').innerHTML = '<p style="color:var(--danger)">Error: ' + e.message + '</p>'; }
+}
+
+async function makeAdmin(id) { try { await api('/admin/users/' + id + '/role', { method: 'PUT', body: JSON.stringify({role:'admin'}) }); setMsg('User promoted to admin', 'ok'); loadUsers(); } catch (e) { setMsg(e.message, 'err'); } }
+async function makeUser(id) { try { await api('/admin/users/' + id + '/role', { method: 'PUT', body: JSON.stringify({role:'user'}) }); setMsg('Admin demoted to user', 'ok'); loadUsers(); } catch (e) { setMsg(e.message, 'err'); } }
+
+async function createUser() {
+  const email = document.getElementById('new-user-email').value.trim();
+  const username = document.getElementById('new-user-username').value.trim();
+  const password = document.getElementById('new-user-password').value;
+  const role = document.getElementById('new-user-role').value;
+  if (!email || !username || !password) { setMsg('Email, username, and password are required', 'err'); return; }
+  if (password.length < 4) { setMsg('Password must be at least 4 characters', 'err'); return; }
+  try {
+    await api('/admin/users', { method: 'POST', body: JSON.stringify({ email, username, password, role }) });
+    setMsg('User created!', 'ok');
+    document.getElementById('new-user-email').value = '';
+    document.getElementById('new-user-username').value = '';
+    document.getElementById('new-user-password').value = '';
+    loadUsers();
+  } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Delete this user? Their quiz attempts will also be removed.')) return;
+  try {
+    await api('/admin/users/' + id, { method: 'DELETE' });
+    setMsg('User deleted', 'ok');
+    loadUsers();
+  } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function loadLogs() {
+  try {
+    const logs = await api('/admin/logs');
+    document.getElementById('logs-list').innerHTML = logs.length === 0 ? '<p style="color:var(--muted)">No logs yet.</p>' :
+      `<div class="table-wrap"><table><tr><th>Time</th><th>Admin</th><th>Action</th><th>Details</th></tr>${logs.map(l => `<tr><td>${new Date(l.created_at).toLocaleString()}</td><td>${l.admin_name}</td><td>${l.action}</td><td style="font-size:11px;max-width:300px;overflow:hidden;text-overflow:ellipsis;">${l.details || ''}</td></tr>`).join('')}</table></div>`;
+  } catch (e) { document.getElementById('logs-list').innerHTML = '<p style="color:var(--danger)">Error: ' + e.message + '</p>'; }
+}
+
+let matDetectedQuestions = [];
+let lastMatSubjectId = '';
+let lastMaterialId = null;
+
+async function autoGenerate() {
+  const title = document.getElementById('auto-title').value.trim();
+  const subjId = document.getElementById('auto-subj').value;
+  const subjName = document.getElementById('auto-subj-name').value.trim();
+  const difficulty = document.getElementById('auto-diff').value;
+  const fileInput = document.getElementById('auto-file');
+  if (!title || !fileInput.files.length) { setMsg('Title and file are required', 'err'); return; }
+  const prog = document.getElementById('auto-progress'); prog.style.display = 'block'; prog.textContent = 'Auto-generating subject, quiz, and questions...';
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  formData.append('title', title);
+  if (subjId) formData.append('subject_id', subjId);
+  if (subjName) formData.append('subject_name', subjName);
+  formData.append('difficulty', difficulty);
+
+  try {
+    const res = await fetch(API + '/admin/materials/auto-generate', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Auto-generation failed');
+    setMsg('✅ Auto-generated! Subject: ' + data.subject.name + ', Quiz: ' + data.quiz.title + ' (' + data.question_count + ' questions)', 'ok');
+    fileInput.value = '';
+    loadSubjects();
+    loadQuizzes();
+  } catch (e) { setMsg(e.message, 'err'); }
+  prog.style.display = 'none';
+}
+
+async function uploadMaterial() {
+  const title = document.getElementById('mat-title').value.trim();
+  const subject_id = document.getElementById('mat-subj').value;
+  const fileInput = document.getElementById('mat-file');
+  if (!title || !fileInput.files.length) { setMsg('Title and file are required', 'err'); return; }
+  const prog = document.getElementById('mat-progress'); prog.style.display = 'block'; prog.textContent = 'Uploading and parsing...';
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  formData.append('title', title);
+  formData.append('subject_id', subject_id);
+
+  try {
+    const res = await fetch(API + '/admin/materials/upload', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getToken() },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    lastMatSubjectId = subject_id;
+    showParsedMaterial(data);
+    setMsg('Material uploaded and parsed!', 'ok');
+    loadMaterials();
+  } catch (e) { setMsg(e.message, 'err'); }
+  prog.style.display = 'none';
+}
+
+function applyAnswerKey() {
+  const raw = document.getElementById('mat-answer-key').value.trim();
+  if (!raw) { setMsg('Paste the answer key first', 'err'); return; }
+  const entries = raw.split(/\n|,|;/).map(s => s.trim()).filter(Boolean);
+  let applied = 0;
+  for (const entry of entries) {
+    const m = entry.match(/^(\d+)\s*[\.\):]?\s*([A-Da-d])/);
+    if (!m) continue;
+    const num = parseInt(m[1]) - 1;
+    const letter = m[2].toUpperCase();
+    const ai = 'ABCD'.indexOf(letter);
+    if (num >= 0 && num < matDetectedQuestions.length && ai !== -1) {
+      matDetectedQuestions[num].a = ai;
+      applied++;
+    }
+  }
+  renderMatQuestions();
+  setMsg('Applied answers to ' + applied + ' questions. Edit any that are wrong.', applied > 0 ? 'ok' : 'err');
+}
+
+function renderMatQuestions() {
+  document.getElementById('mat-detected-count').textContent = `(${matDetectedQuestions.length} found)`;
+  const container = document.getElementById('mat-questions-preview');
+  if (matDetectedQuestions.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--muted)">No questions available.</p>';
+    return;
+  }
+  container.innerHTML = `
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px;font-size:13px;">
+      <label style="font-weight:700;">Paste Answer Key</label>
+      <div style="display:flex;gap:6px;margin-top:4px;">
+        <textarea id="mat-answer-key" rows="2" style="flex:1;font-size:12px;padding:6px;border:1px solid var(--border);border-radius:6px;" placeholder="Paste like: 1. A, 2. B, 3. C ... or 1.a 2.b 3.c ..."></textarea>
+        <button class="btn-sm" onclick="applyAnswerKey()" style="align-self:flex-end;">Apply</button>
+      </div>
+    </div>
+  ` + matDetectedQuestions.map(q => `
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:6px;">
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <input type="checkbox" ${q._checked ? 'checked' : ''} onchange="toggleMatQuestion(${q._id})" style="width:16px;margin-top:4px;">
+        <div style="flex:1;font-size:13px;">
+          <div style="font-weight:600;margin-bottom:4px;">${escHtml(q.q)}</div>
+          <div style="font-size:12px;color:var(--muted);">${q.o.map((o, oi) => `<span style="display:inline-block;margin-right:12px;">${['A','B','C','D'][oi]}. ${escHtml(o)}${oi === q.a ? ' ←' : ''}</span>`).join('')}${q.a === -1 ? ' <span style="color:var(--danger);font-weight:700;">[Answer not set]</span>' : ''}</div>
+        </div>
+        <button class="btn-sm" onclick="editMatQuestion(${q._id})" style="flex-shrink:0;">Edit</button>
+      </div>
+    </div>`).join('');
+}
+
+function showParsedMaterial(data) {
+  document.getElementById('mat-parsed-panel').style.display = 'block';
+  document.getElementById('mat-content-preview').textContent = data.content_preview || '(no content extracted)';
+  if (data.material && data.material.id) lastMaterialId = data.material.id;
+  if (data.subject_id) lastMatSubjectId = data.subject_id;
+
+  const raw = data.extracted_questions || [];
+  if (raw.length > 0) {
+    matDetectedQuestions = raw.slice(0, 40).map((q, i) => ({ ...q, _checked: true, _id: i }));
+  }
+  renderMatQuestions();
+
+  document.getElementById('mat-quiz-id').value = subjectIdFromTitle(data.material.title || 'generated');
+  document.getElementById('mat-quiz-title').value = data.material.title + ' — Auto Quiz';
+  document.getElementById('mat-quiz-desc').value = 'Auto-generated from uploaded material';
+}
+
+function subjectIdFromTitle(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '-q';
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function toggleMatQuestion(id) {
+  const q = matDetectedQuestions.find(q => q._id === id);
+  if (q) q._checked = !q._checked;
+}
+
+function editMatQuestion(id) {
+  const q = matDetectedQuestions.find(q => q._id === id);
+  if (!q) return;
+  const labels = ['Question', 'Option A', 'Option B', 'Option C', 'Option D'];
+  const vals = [q.q, ...q.o];
+  const html = `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)this.remove()">
+      <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2);">
+        <h3 style="font-family:'Outfit',sans-serif;margin-bottom:1rem;">Edit Question</h3>
+        ${labels.map((l, i) => `
+          <label>${l}</label>
+          <input id="me-${i}" value="${escHtml(vals[i] || '')}" ${i === 0 ? '' : 'style="margin-bottom:6px;"'}
+        `).join('')}
+        <div style="margin:8px 0;">
+          <label>Correct Answer</label>
+          <select id="me-ans">
+            <option value="-1" ${q.a === -1 ? 'selected' : ''}>Not set</option>
+            ${[0,1,2,3].map(i => `<option value="${i}" ${i === q.a ? 'selected' : ''}>${['A','B','C','D'][i]}</option>`).join('')}
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn" onclick="saveMatQuestionEdit(${id})">Save</button>
+          <button class="btn-sm" onclick="this.closest('div[style*=\"fixed\"]').remove()">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function saveMatQuestionEdit(id) {
+  const q = matDetectedQuestions.find(q => q._id === id);
+  if (!q) return;
+  q.q = document.getElementById('me-0').value;
+  q.o = [1,2,3,4].map(i => document.getElementById('me-' + i).value);
+  q.a = parseInt(document.getElementById('me-ans').value);
+  q._checked = true;
+  document.querySelector('div[style*="fixed"]')?.remove();
+  renderMatQuestions();
+}
+
+async function generateQuizFromMaterial() {
+  const checked = matDetectedQuestions.filter(q => q._checked);
+  if (checked.length === 0) { setMsg('Select at least one question to generate', 'err'); return; }
+  const quiz_id = document.getElementById('mat-quiz-id').value.trim();
+  const title = document.getElementById('mat-quiz-title').value.trim();
+  if (!quiz_id || !title) { setMsg('Quiz ID and Title are required', 'err'); return; }
+  const questions = checked.map(q => {
+    const opts = Array.isArray(q.o) ? q.o : [];
+    return { q: q.q || '', o: [...opts], a: q.a };
+  });
+  if (questions.some(q => !q.q || q.o.length !== 4)) {
+    setMsg('Some questions are incomplete. Make sure all have text and 4 options.', 'err');
+    return;
+  }
+  if (questions.some(q => q.a === -1)) {
+    setMsg('Some questions have no correct answer set. Edit each question and select the correct answer.', 'err');
+    return;
+  }
+  try {
+    await api('/admin/materials/generate-quiz', {
+      method: 'POST',
+      body: JSON.stringify({
+        material_id: lastMaterialId || 1,
+        quiz_id,
+        subject_id: lastMatSubjectId || '',
+        title,
+        description: document.getElementById('mat-quiz-desc').value,
+        difficulty: document.getElementById('mat-quiz-diff').value,
+        questions
+      })
+    });
+    setMsg('Quiz generated with ' + checked.length + ' questions!', 'ok');
+    document.getElementById('mat-parsed-panel').style.display = 'none';
+    loadQuizzes();
+  } catch (e) { console.error(e); setMsg(e.message, 'err'); }
+}
+
+async function loadMaterials() {
+  try {
+    const materials = await api('/admin/materials');
+    document.getElementById('materials-list').innerHTML = materials.length === 0 ? '<p style="color:var(--muted)">No materials uploaded yet.</p>' :
+      `<div class="table-wrap"><table><tr><th>Title</th><th>Subject</th><th>File</th><th>Type</th><th>Uploaded</th><th></th></tr>${materials.map(m => `<tr><td>${m.title}</td><td>${m.subject_name}</td><td style="font-size:11px;">${m.filename}</td><td>${m.file_type}</td><td>${new Date(m.created_at).toLocaleDateString()}</td><td><button class="btn-sm" onclick="previewMaterial(${m.id})">Preview</button> <button class="btn-sm danger" onclick="deleteMaterial(${m.id})">Delete</button></td></tr>`).join('')}</table></div>`;
+  } catch (e) { document.getElementById('materials-list').innerHTML = '<p style="color:var(--danger)">Error: ' + e.message + '</p>'; }
+}
+
+async function previewMaterial(id) {
+  try {
+    const data = await api('/admin/materials/' + id);
+    showParsedMaterial({
+      material: { id: data.id, title: data.title, subject_id: data.subject_id },
+      subject_id: data.subject_id,
+      content_preview: data.content,
+      extracted_questions: data.extracted_questions || []
+    });
+    document.getElementById('mat-parsed-panel').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function deleteMaterial(id) {
+  if (!confirm('Delete this material?')) return;
+  try { await api('/admin/materials/' + id, { method: 'DELETE' }); setMsg('Material deleted', 'ok'); loadMaterials(); } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function bulkImport() {
+  const raw = document.getElementById('import-data').value.trim();
+  if (!raw) { setMsg('Please paste the data to import', 'err'); return; }
+  try {
+    const data = JSON.parse(raw);
+    const res = await api('/admin/import-bulk', { method: 'POST', body: JSON.stringify({ data }) });
+    setMsg(`Imported: ${res.subjects} subjects, ${res.quizzes} quizzes, ${res.questions} questions`, 'ok');
+    document.getElementById('import-data').value = '';
+  } catch (e) { setMsg('Error: ' + e.message, 'err'); }
+}
+
+checkAdmin().then(() => { loadSubjects(); loadSubjectsDropdown(); loadQuizzes(); });
+</script>
+</body>
+</html>

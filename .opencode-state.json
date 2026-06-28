@@ -1,0 +1,30 @@
+{
+  "project": "JHS QuizMaster B7",
+  "last_session": "2026-06-26",
+  "status": "save_fixed_and_autogen_added",
+  "files_read": [
+    "server.js", "db.js", "middleware.js", "package.json", "seed.js",
+    "routes/auth.js", "routes/quizzes.js", "routes/admin.js", "routes/materials.js",
+    "public/index.html", "public/admin.html"
+  ],
+  "files_modified": [
+    "server.js", "db.js", "public/admin.html", "routes/materials.js"
+  ],
+  "files_created": [
+    "routes/materials.js", ".opencode-state.json"
+  ],
+  "dependencies_added": ["mammoth", "pdf-parse"],
+  "bugs_fixed": [
+    "editQuestion Done button: removed broken 'qe-editor' id reference that caused silent TypeError; added doneEditing() function + oninput handlers for real-time data binding",
+    "saveQuiz: added oninput alongside onchange so edits are captured even without blur",
+    "material_id: was hardcoded to 1; now tracked via lastMaterialId variable"
+  ],
+  "features_added": [
+    "Materials tab in admin panel with upload/parse/review/generate flow",
+    "Auto-Generate Everything: one-click upload → auto-create subject + quiz + questions from .docx/.pdf",
+    "MCQ detection from structured text (question + A/B/C/D + answer pattern)",
+    "Fill-in-the-blank auto-generation from content keywords"
+  ],
+  "pending_changes": [],
+  "notes": "Server on port 3000. Admin: admin@quizmaster.com / admin123. Access admin panel at /admin.html"
+}

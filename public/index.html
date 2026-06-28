@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#f8f7fc;--surface:#fff;--card:#fff;--border:#e1deed;--border2:#c7c3d3;--text:#121212;--muted:#625e6e;--faint:#8e8a9a;--accent:#0891b2;--accent-bg:#ecfeff;--accent-light:#cffafe;--success:#0f7b4a;--success-bg:#ebf8f1;--danger:#d83f55;--danger-bg:#fef1f0;--warn:#b45309;--warn-bg:#fffbeb;--ghana-gold:#f59e0b;--ghana-red:#dc2626;--ghana-green:#16a34a;--shadow:0 1px 4px rgba(18,18,18,.12);--shadow-md:0 1px 8px rgba(18,18,18,.15);--shadow-lg:0 12px 32px rgba(18,18,18,.12);--radius:8px;--radius-lg:16px;}
+body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+.app{max-width:800px;margin:0 auto;padding:1.75rem 1.5rem 4rem;}
+.header{display:flex;align-items:center;gap:14px;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.logo{width:46px;height:46px;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--accent),#0e7490);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;cursor:pointer;box-shadow:0 4px 12px rgba(8,145,178,.3);}
+.header h1{font-family:'Schibsted Grotesk',sans-serif;font-size:24px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
+.header p{font-size:13px;color:var(--muted);margin-top:2px;}
+.gh-flag{display:flex;height:6px;width:40px;border-radius:3px;overflow:hidden;margin-top:4px;}
+.gh-flag div{flex:1;}
+.flag-r{background:var(--ghana-red);}
+.flag-g{background:var(--ghana-gold);}
+.flag-gr{background:var(--ghana-green);}
+.screen{display:none;}.screen.active{display:block;}
+.page-title{font-family:'Schibsted Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-.4px;}
+.page-sub{font-size:14px;color:var(--muted);margin-bottom:1.75rem;}
+.subject-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.subject-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;box-shadow:var(--shadow);}
+.subject-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);transform:translateY(-3px);}
+.subject-card::after{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;}
+.subject-card.eng::after{background:linear-gradient(90deg,#6366f1,#8b5cf6);}
+.subject-card.sci::after{background:linear-gradient(90deg,#0ea5e9,#06b6d4);}
+.subject-card.math::after{background:linear-gradient(90deg,#f59e0b,#f97316);}
+.subject-card.soc::after{background:linear-gradient(90deg,#16a34a,#10b981);}
+.subject-card.comp::after{background:linear-gradient(90deg,#dc2626,#f43f5e);}
+.subj-icon{font-size:32px;margin-bottom:10px;}
+.subject-card h3{font-family:'Schibsted Grotesk',sans-serif;font-weight:600;font-size:16px;margin-bottom:4px;letter-spacing:-.2px;}
+.subject-card p{font-size:12px;color:var(--muted);line-height:1.4;}
+.quiz-count-badge{display:inline-block;margin-top:10px;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:44px;padding:3px 12px;color:var(--muted);font-weight:500;}
+.back-btn{background:none;border:1px solid var(--border);color:var(--text);font-family:'Schibsted Grotesk',sans-serif;font-size:13px;padding:8px 16px;border-radius:44px;cursor:pointer;margin-bottom:1.75rem;transition:all .2s;font-weight:500;}
+.back-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.quiz-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.5rem;margin-bottom:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);}
+.quiz-item:hover{border-color:var(--accent);box-shadow:var(--shadow-md);}
+.qi-info h4{font-weight:600;font-size:15px;margin-bottom:3px;}
+.qi-info p{font-size:12px;color:var(--muted);}
+.badge{font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600;letter-spacing:.2px;}
+.badge-easy{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
+.badge-medium{background:#fffbeb;color:#92400e;border:1px solid #fcd34d;}
+.badge-hard{background:#fff5f5;color:#991b1b;border:1px solid #fca5a5;}
+.arrow-ic{color:var(--faint);font-size:22px;font-weight:300;}
+.quiz-topbar{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;}
+.q-progress-wrap{flex:1;}
+.q-progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500;}
+.progress-track{height:6px;background:var(--border);border-radius:10px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:10px;transition:width .4s ease;}
+.score-pill{background:var(--card);border:1px solid var(--border);border-radius:44px;padding:6px 16px;font-size:13px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);}
+.score-pill span{color:var(--accent);}
+.timer-wrap{position:relative;width:54px;height:54px;flex-shrink:0;}
+.timer-wrap svg{transform:rotate(-90deg);}
+.timer-bg{fill:none;stroke:var(--border);stroke-width:4.5;}
+.timer-fg{fill:none;stroke-width:4.5;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .3s;}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Schibsted Grotesk',sans-serif;font-size:16px;font-weight:700;}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;margin-bottom:1rem;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s;}
+.question-card:hover{box-shadow:var(--shadow-md);border-color:var(--border2);}
+.q-num-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;}
+.q-text{font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:600;line-height:1.5;color:var(--text);letter-spacing:-.2px;}
+.options-grid{display:grid;gap:9px;}
+.option-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem 1.1rem;text-align:left;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:12px;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;color:var(--text);width:100%;box-shadow:var(--shadow);}
+.option-btn:hover:not(:disabled){border-color:var(--accent);background:var(--accent-bg);}
+.option-letter{width:28px;height:28px;border-radius:var(--radius);background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:all .18s;}
+.option-btn.correct{border-color:var(--success);background:var(--success-bg);}
+.option-btn.correct .option-letter{background:var(--success);border-color:var(--success);color:#fff;}
+.option-btn.wrong{border-color:var(--danger);background:var(--danger-bg);}
+.option-btn.wrong .option-letter{background:var(--danger);border-color:var(--danger);color:#fff;}
+.feedback-row{min-height:38px;display:flex;align-items:center;margin:6px 0;}
+.fb{font-size:13px;font-weight:600;padding:6px 14px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;}
+.fb.correct{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border);}
+.fb.wrong{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border);}
+.fb.timeout{background:var(--warn-bg);color:var(--warn);border:1px solid #fcd34d;}
+.next-btn{width:100%;background:var(--accent);border:none;border-radius:44px;padding:13px;font-family:'Schibsted Grotesk',sans-serif;font-size:16px;font-weight:600;color:#fff;cursor:pointer;transition:all .2s;margin-top:4px;box-shadow:0 2px 6px rgba(8,145,178,.25);}
+.next-btn:hover{background:#0e7490;transform:translateY(-1px);box-shadow:0 4px 12px rgba(8,145,178,.3);}
+.next-btn:disabled{background:var(--border);color:var(--faint);cursor:not-allowed;transform:none;box-shadow:none;}
+.results-hero{text-align:center;padding:1.5rem 0 1rem;}
+.score-circle{width:130px;height:130px;margin:0 auto 1.25rem;position:relative;}
+.score-circle svg{transform:rotate(-90deg);}
+.score-circle-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-big{font-family:'Schibsted Grotesk',sans-serif;font-size:32px;font-weight:700;letter-spacing:-.5px;}
+.score-sm{font-size:11px;color:var(--muted);font-weight:500;}
+.results-title{font-family:'Schibsted Grotesk',sans-serif;font-size:26px;font-weight:700;margin-bottom:5px;letter-spacing:-.3px;}
+.results-sub{color:var(--muted);font-size:14px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:1.5rem 0;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;text-align:center;box-shadow:var(--shadow);}
+.stat-val{font-family:'Schibsted Grotesk',sans-serif;font-size:28px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px;}
+.stat-label{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;}
+.stat-card.g .stat-val{color:var(--success);}
+.stat-card.r .stat-val{color:var(--danger);}
+.stat-card.b .stat-val{color:var(--accent);}
+.result-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;}
+.btn-outline{background:none;border:1px solid var(--border);border-radius:44px;padding:12px;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.btn-primary{background:var(--accent);border:none;border-radius:44px;padding:12px;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;font-weight:600;color:#fff;cursor:pointer;transition:all .2s;}
+.btn-primary:hover{background:#0e7490;}
+.review-heading{font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700;margin-bottom:1rem;padding-top:.5rem;border-top:1px solid var(--border);}
+.rev-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;margin-bottom:9px;box-shadow:var(--shadow);}
+.rev-item.cq{border-left:4px solid var(--success);}
+.rev-item.wq{border-left:4px solid var(--danger);}
+.rev-item.sq{border-left:4px solid var(--ghana-gold);}
+.rev-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.rev-q{font-size:13px;font-weight:500;line-height:1.5;flex:1;}
+.rev-badge{font-size:10px;padding:2px 9px;border-radius:20px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+.rb-c{background:var(--success-bg);color:var(--success);}
+.rb-w{background:var(--danger-bg);color:var(--danger);}
+.rb-s{background:var(--warn-bg);color:var(--warn);}
+.rev-ans{font-size:12px;color:var(--muted);}
+.rev-ans .ca{color:var(--success);font-weight:600;}
+.rev-ans .wa{color:var(--danger);font-weight:600;}
+.home-btn{width:100%;background:none;border:1px solid var(--border);border-radius:44px;padding:12px;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;margin-top:.5rem;}
+.home-btn:hover{border-color:var(--text);color:var(--text);background:var(--accent-bg);}
+@keyframes pop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
+.pop{animation:pop .22s ease forwards;}
+.auth-form{max-width:380px;margin:2rem auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;box-shadow:var(--shadow-md);}
+.auth-form h2{font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px;text-align:center;}
+.auth-form .auth-sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:1.5rem;}
+.auth-form label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text);}
+.auth-form input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-family:'Schibsted Grotesk',sans-serif;font-size:14px;margin-bottom:14px;transition:border .2s;outline:none;}
+.auth-form input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(8,145,178,.12);}
+.auth-form .auth-btn{width:100%;background:var(--accent);border:none;border-radius:44px;padding:11px;font-family:'Schibsted Grotesk',sans-serif;font-size:15px;font-weight:600;color:#fff;cursor:pointer;transition:all .2s;}
+.auth-form .auth-btn:hover{background:#0e7490;}
+.auth-form .auth-link{text-align:center;font-size:13px;color:var(--muted);margin-top:14px;}
+.auth-form .auth-link a{color:var(--accent);cursor:pointer;font-weight:600;}
+.auth-form .auth-link a:hover{text-decoration:underline;}
+.auth-error{text-align:center;font-size:12px;color:var(--danger);margin-bottom:10px;min-height:18px;}
+.user-bar{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.user-bar .uname{font-size:12px;font-weight:600;color:var(--text);}
+.user-bar .role-badge{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:700;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-light);text-transform:uppercase;}
+.user-bar .logout-btn{background:none;border:1px solid var(--border);border-radius:44px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);font-family:'Schibsted Grotesk',sans-serif;transition:all .2s;}
+.user-bar .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+.progress-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;box-shadow:var(--shadow);}
+.progress-section h3{font-family:'Schibsted Grotesk',sans-serif;font-size:15px;font-weight:700;margin-bottom:8px;}
+.progress-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.pg-item{text-align:center;padding:6px;}
+.pg-val{font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700;}
+.pg-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.pg-item.g .pg-val{color:var(--success);}
+.pg-item.b .pg-val{color:var(--accent);}
+.pg-item.r .pg-val{color:var(--danger);}
+.attempt-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.8rem 1rem;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow);}
+.attempt-item .ai-left{flex:1;}
+.attempt-item .ai-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.attempt-item .ai-meta{font-size:11px;color:var(--muted);}
+.attempt-item .ai-score{font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700;}
+.attempt-item .ai-score.g{color:var(--success);}
+.attempt-item .ai-score.b{color:var(--accent);}
+.attempt-item .ai-score.r{color:var(--danger);}
+.top-actions{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.top-actions button{background:none;border:1px solid var(--border);border-radius:44px;padding:8px 16px;font-family:'Schibsted Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);transition:all .2s;}
+.top-actions button:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.top-actions button.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="logo" onclick="location.reload()">🇬🇭</div>
+    <div>
+      <h1>JHS QuizMaster — B7</h1>
+      <p>NaCCA Common Core Programme · BECE-Style Objective Questions</p>
+    </div>
+    <div class="user-bar" id="user-bar"></div>
+  </header>
+
+  <div class="screen active" id="screen-auth">
+    <div class="auth-form" id="auth-form-container">
+      <h2 id="auth-title">Welcome Back</h2>
+      <p class="auth-sub" id="auth-sub">Sign in to continue your studies</p>
+      <div class="auth-error" id="auth-error"></div>
+      <form id="auth-form" onsubmit="return handleAuth(event)">
+        <label for="auth-email">Email</label>
+        <input type="email" id="auth-email" placeholder="your@email.com" required>
+        <label for="auth-username" id="auth-username-label" style="display:none">Username</label>
+        <input type="text" id="auth-username" placeholder="Choose a username" style="display:none">
+        <label for="auth-pass">Password</label>
+        <input type="password" id="auth-pass" placeholder="Enter password" required minlength="4">
+        <button class="auth-btn" id="auth-submit-btn" type="submit">Sign In</button>
+      </form>
+      <p class="auth-link" id="auth-toggle">
+        Don't have an account? <a onclick="toggleAuthMode()">Create one</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-subjects">
+    <p class="page-title">Select a Subject</p>
+    <p class="page-sub" id="subjects-sub">B7 (JHS 1) Syllabus · NaCCA Common Core Programme</p>
+    <div class="top-actions" id="top-actions">
+      <button class="active" onclick="showSubjects()">📚 Subjects</button>
+      <button onclick="showProgress()">📊 My Progress</button>
+    </div>
+    <div class="subject-grid" id="subject-grid"></div>
+  </div>
+
+  <div class="screen" id="screen-progress">
+    <p class="page-title">My Progress</p>
+    <p class="page-sub">Track your quiz performance across all subjects</p>
+    <div class="top-actions">
+      <button onclick="showSubjects()">📚 Subjects</button>
+      <button class="active" onclick="showProgress()">📊 My Progress</button>
+    </div>
+    <div id="progress-content"></div>
+  </div>
+
+  <div class="screen" id="screen-quizlist">
+    <button class="back-btn" onclick="showSubjects()">← All Subjects</button>
+    <p class="page-title" id="ql-heading"></p>
+    <p class="page-sub" id="ql-sub"></p>
+    <div id="quiz-list"></div>
+  </div>
+
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-topbar">
+      <div class="timer-wrap">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle class="timer-bg" cx="26" cy="26" r="22"/>
+          <circle class="timer-fg" id="timer-ring" cx="26" cy="26" r="22"/>
+        </svg>
+        <div class="timer-num" id="timer-num">40</div>
+      </div>
+      <div class="q-progress-wrap">
+        <div class="q-progress-label">
+          <span id="q-counter">Question 1 of 40</span>
+          <span id="q-subj-tag"></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+      <div class="score-pill">Score: <span id="live-score">0</span></div>
+    </div>
+    <div class="question-card pop" id="q-card">
+      <p class="q-num-label" id="q-num-label">QUESTION 1</p>
+      <p class="q-text" id="q-text">Loading...</p>
+    </div>
+    <div class="options-grid" id="options-grid"></div>
+    <div class="feedback-row"><div class="fb" id="feedback-msg" style="display:none"></div></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()" disabled>Next Question →</button>
+  </div>
+
+  <div class="screen" id="screen-results">
+    <div class="results-hero">
+      <div class="score-circle">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle fill="none" stroke="var(--border)" stroke-width="10" cx="65" cy="65" r="55"/>
+          <circle fill="none" stroke-width="10" stroke-linecap="round" cx="65" cy="65" r="55" id="result-ring" stroke-dasharray="345.4" stroke-dashoffset="345.4" style="transition:stroke-dashoffset 1.3s ease"/>
+        </svg>
+        <div class="score-circle-inner"><span class="score-big" id="result-pct">0%</span><span class="score-sm">score</span></div>
+      </div>
+      <p class="results-title" id="result-title">Well done!</p>
+      <p class="results-sub" id="result-sub"></p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card g"><div class="stat-val" id="stat-correct">0</div><div class="stat-label">Correct</div></div>
+      <div class="stat-card r"><div class="stat-val" id="stat-wrong">0</div><div class="stat-label">Wrong</div></div>
+      <div class="stat-card b"><div class="stat-val" id="stat-skip">0</div><div class="stat-label">Skipped</div></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-outline" onclick="retryQuiz()">🔄 Retry Quiz</button>
+      <button class="btn-primary" onclick="toggleReview()">📋 Review Answers</button>
+    </div>
+    <div id="review-section" style="display:none">
+      <p class="review-heading">Answer Review</p>
+      <div id="review-list"></div>
+    </div>
+    <button class="home-btn" onclick="goHome()">← Back to Subjects</button>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin + '/api';
+const CIRC = 2*Math.PI*22;
+const TMAX = 40;
+
+let state = { user: null, token: null, isLogin: true, subject: null, quiz: null, questions: [], currentQ: 0, score: 0, answers: [], answered: false, timerInt: null, graded: [] };
+
+function getToken() { return localStorage.getItem('token'); }
+function setToken(t) { if (t) localStorage.setItem('token', t); else localStorage.removeItem('token'); }
+
+async function api(path, opts = {}) {
+  const token = getToken();
+  const headers = { 'Content-Type': 'application/json', ...(token ? { 'Authorization': 'Bearer ' + token } : {}), ...opts.headers };
+  const res = await fetch(API + path, { ...opts, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + name);
+  if (el) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderUserBar() {
+  const bar = document.getElementById('user-bar');
+  if (state.user) {
+    bar.innerHTML = `<span class="uname">${state.user.username}</span>${state.user.role === 'admin' ? '<span class="role-badge">Admin</span>' : ''}<a href="/admin.html" style="font-size:11px;color:var(--accent);font-weight:600;text-decoration:none;" target="_blank">⚙️</a><button class="logout-btn" onclick="logout()">Logout</button>`;
+  } else {
+    bar.innerHTML = '';
+  }
+}
+
+function toggleAuthMode() {
+  state.isLogin = !state.isLogin;
+  document.getElementById('auth-title').textContent = state.isLogin ? 'Welcome Back' : 'Create Account';
+  document.getElementById('auth-sub').textContent = state.isLogin ? 'Sign in to continue your studies' : 'Join JHS QuizMaster today';
+  document.getElementById('auth-submit-btn').textContent = state.isLogin ? 'Sign In' : 'Create Account';
+  document.getElementById('auth-toggle').innerHTML = state.isLogin ? 'Don\'t have an account? <a onclick="toggleAuthMode()">Create one</a>' : 'Already have an account? <a onclick="toggleAuthMode()">Sign in</a>';
+  document.getElementById('auth-username-label').style.display = state.isLogin ? 'none' : 'block';
+  document.getElementById('auth-username').style.display = state.isLogin ? 'none' : 'block';
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('auth-email').value;
+  const password = document.getElementById('auth-pass').value;
+  const username = document.getElementById('auth-username').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  try {
+    let data;
+    if (state.isLogin) {
+      data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    } else {
+      if (!username) { errEl.textContent = 'Username is required'; return; }
+      data = await api('/auth/register', { method: 'POST', body: JSON.stringify({ email, username, password }) });
+    }
+    setToken(data.token);
+    state.user = data.user;
+    renderUserBar();
+    if (state.user.role === 'admin') {
+      if (confirm('You are logged in as Admin. Open the admin panel?')) {
+        window.open('/admin.html', '_blank');
+      }
+    }
+    initApp();
+  } catch (err) {
+    errEl.textContent = err.message;
+  }
+}
+
+async function checkAuth() {
+  const token = getToken();
+  if (!token) { showScreen('auth'); return false; }
+  try {
+    const user = await api('/auth/me');
+    state.user = user;
+    renderUserBar();
+    return true;
+  } catch (e) {
+    setToken(null);
+    state.user = null;
+    showScreen('auth');
+    return false;
+  }
+}
+
+function logout() {
+  setToken(null);
+  state.user = null;
+  state.token = null;
+  renderUserBar();
+  showScreen('auth');
+}
+
+async function initApp() {
+  const authed = await checkAuth();
+  if (authed) showSubjects();
+}
+
+async function showSubjects() {
+  if (!state.user) { await checkAuth(); if (!state.user) return; }
+  showScreen('subjects');
+  const grid = document.getElementById('subject-grid');
+  grid.innerHTML = '<p style="color:var(--muted)">Loading subjects...</p>';
+  try {
+    const subjects = await api('/subjects');
+    grid.innerHTML = subjects.map(s => `
+      <div class="subject-card ${s.color_class || ''}" onclick="selectSubject('${s.id}')">
+        <div class="subj-icon">${s.icon || '📘'}</div>
+        <h3>${s.name}</h3>
+        <p>${s.description || ''}</p>
+        <span class="quiz-count-badge">${s.quizzes ? s.quizzes.length : 0} quizzes · 40 Qs each</span>
+      </div>`).join('');
+    document.getElementById('subjects-sub').textContent = `B7 (JHS 1) Syllabus · NaCCA Common Core Programme · Logged in as ${state.user.username}`;
+    renderProgressSummary();
+  } catch (e) {
+    grid.innerHTML = `<p style="color:var(--danger)">Failed to load: ${e.message}</p>`;
+  }
+}
+
+async function renderProgressSummary() {
+  const container = document.getElementById('progress-content');
+  try {
+    const { stats, attempts } = await api('/progress');
+    container.innerHTML = `
+      <div class="progress-section">
+        <h3>📊 Overall Stats</h3>
+        <div class="progress-grid">
+          <div class="pg-item g"><div class="pg-val">${stats.total_attempts || 0}</div><div class="pg-label">Quizzes Taken</div></div>
+          <div class="pg-item b"><div class="pg-val">${stats.avg_percent || 0}%</div><div class="pg-label">Average Score</div></div>
+          <div class="pg-item g"><div class="pg-val">${stats.total_correct || 0}/${stats.total_questions || 0}</div><div class="pg-label">Total Correct</div></div>
+        </div>
+      </div>
+      <div class="progress-section">
+        <h3>📋 Recent Attempts</h3>
+        <div id="attempts-list">${attempts.length === 0 ? '<p style="font-size:13px;color:var(--muted)">No attempts yet. Take a quiz!</p>' : attempts.map(a => {
+          const pct = Math.round((a.score / a.total) * 100);
+          const cls = pct >= 70 ? 'g' : pct >= 50 ? 'b' : 'r';
+          return `<div class="attempt-item"><div class="ai-left"><div class="ai-title">${a.quiz_title}</div><div class="ai-meta">${a.subject_name} · ${a.difficulty} · ${new Date(a.completed_at).toLocaleDateString()}</div></div><div class="ai-score ${cls}">${a.score}/${a.total}</div></div>`;
+        }).join('')}</div>
+      </div>`;
+  } catch (e) {
+    container.innerHTML = `<p style="color:var(--danger)">${e.message}</p>`;
+  }
+}
+
+async function showProgress() {
+  if (!state.user) return;
+  showScreen('progress');
+  await renderProgressSummary();
+}
+
+async function selectSubject(id) {
+  try {
+    const subjects = await api('/subjects');
+    const subject = subjects.find(s => s.id === id);
+    if (!subject) return;
+    state.subject = subject;
+    document.getElementById('ql-heading').textContent = subject.name;
+    document.getElementById('ql-sub').textContent = `NaCCA B7 Syllabus · ${subject.icon || ''} BECE-Style Objective Questions`;
+    document.getElementById('quiz-list').innerHTML = (subject.quizzes || []).map(q => `
+      <div class="quiz-item" onclick="startQuiz('${q.id}')">
+        <div class="qi-info"><h4>${q.title}</h4><p>${q.description || ''}</p></div>
+        <div style="display:flex;align-items:center;gap:8px"><span class="badge badge-${q.difficulty}">${q.difficulty}</span><span class="arrow-ic">›</span></div>
+      </div>`).join('');
+    showScreen('quizlist');
+  } catch (e) {
+    alert('Failed to load: ' + e.message);
+  }
+}
+
+async function startQuiz(quizId) {
+  try {
+    const quiz = await api('/quizzes/' + quizId);
+    state.quiz = quiz;
+    state.questions = quiz.questions;
+    state.currentQ = 0;
+    state.score = 0;
+    state.answers = Array(state.questions.length).fill(null);
+    state.graded = [];
+    document.getElementById('q-subj-tag').textContent = quiz.title;
+    showScreen('quiz');
+    renderQ();
+  } catch (e) {
+    alert('Failed to load quiz: ' + e.message);
+  }
+}
+
+function renderQ() {
+  clearTimer();
+  const q = state.questions[state.currentQ];
+  const tot = state.questions.length;
+  const idx = state.currentQ;
+  let options;
+  try { options = typeof q.options === 'string' ? JSON.parse(q.options) : q.options; } catch(e) { options = q.options || []; }
+  document.getElementById('q-counter').textContent = `Question ${idx+1} of ${tot}`;
+  document.getElementById('q-num-label').textContent = `QUESTION ${idx+1}`;
+  document.getElementById('q-text').textContent = q.question_text;
+  document.getElementById('progress-fill').style.width = `${(idx/tot)*100}%`;
+  document.getElementById('live-score').textContent = state.score;
+  const L = ['A','B','C','D'];
+  document.getElementById('options-grid').innerHTML = options.map((o,i) =>
+    `<button class="option-btn" id="opt-${i}" onclick="selectAns(${i})"><span class="option-letter">${L[i]}</span><span>${o}</span></button>`
+  ).join('');
+  const fb = document.getElementById('feedback-msg'); fb.style.display = 'none'; fb.className = 'fb';
+  document.getElementById('next-btn').disabled = true;
+  state.answered = false;
+  startTimer();
+}
+
+function selectAns(idx) {
+  if (state.answered) return;
+  state.answered = true; clearTimer();
+  const q = state.questions[state.currentQ];
+  state.answers[state.currentQ] = idx;
+  document.querySelectorAll('.option-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add('correct');
+    if (i === idx && idx !== q.answer) btn.classList.add('wrong');
+  });
+  const fb = document.getElementById('feedback-msg');
+  const L = ['A','B','C','D'];
+  let options;
+  try { options = typeof q.options === 'string' ? JSON.parse(q.options) : q.options; } catch(e) { options = q.options || []; }
+  if (idx === q.answer) { state.score++; document.getElementById('live-score').textContent = state.score; fb.textContent = '✓ Correct!'; fb.className = 'fb correct'; }
+  else { fb.textContent = `✗ Wrong! Correct answer: ${L[q.answer]}. ${options[q.answer]}`; fb.className = 'fb wrong'; }
+  fb.style.display = 'inline-flex';
+  document.getElementById('next-btn').disabled = false;
+}
+
+function nextQuestion() {
+  state.currentQ++;
+  if (state.currentQ >= state.questions.length) submitAndShowResults();
+  else renderQ();
+}
+
+function startTimer() {
+  const ring = document.getElementById('timer-ring');
+  const num = document.getElementById('timer-num');
+  let t = TMAX;
+  ring.style.strokeDasharray = CIRC; ring.style.stroke = '#0891b2'; ring.style.strokeDashoffset = 0;
+  num.textContent = t; num.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text');
+  state.timerInt = setInterval(() => {
+    t--; num.textContent = t;
+    ring.style.strokeDashoffset = CIRC * (1 - t/TMAX);
+    if (t <= 10) { ring.style.stroke = '#dc2626'; num.style.color = '#dc2626'; }
+    else if (t <= 20) { ring.style.stroke = '#f59e0b'; num.style.color = '#b45309'; }
+    if (t <= 0) { clearInterval(state.timerInt); timeOut(); }
+  }, 1000);
+}
+
+function clearTimer() { if (state.timerInt) clearInterval(state.timerInt); }
+
+function timeOut() {
+  if (state.answered) return;
+  state.answered = true; state.answers[state.currentQ] = -1;
+  const q = state.questions[state.currentQ];
+  document.querySelectorAll('.option-btn').forEach((btn, i) => { btn.disabled = true; if (i === q.answer) btn.classList.add('correct'); });
+  const fb = document.getElementById('feedback-msg');
+  const L = ['A','B','C','D'];
+  fb.textContent = `⏰ Time up! Correct: ${L[q.answer]}`; fb.className = 'fb timeout'; fb.style.display = 'inline-flex';
+  document.getElementById('next-btn').disabled = false;
+}
+
+async function submitAndShowResults() {
+  clearTimer();
+  try {
+    const result = await api('/quizzes/' + state.quiz.id + '/submit', {
+      method: 'POST',
+      body: JSON.stringify({ answers: state.answers })
+    });
+    state.graded = result.graded || [];
+    showResults(result);
+  } catch (e) {
+    showResults({ score: state.score, total: state.questions.length, graded: [] });
+  }
+}
+
+function showResults(result) {
+  const tot = state.questions.length;
+  const cor = result.graded ? result.graded.filter(g => g.correct).length : state.score;
+  const gradedArr = result.graded || [];
+  const skip = state.answers.filter(a => a === -1).length;
+  const wrong = tot - cor - skip;
+  const pct = Math.round((cor / tot) * 100);
+
+  document.getElementById('stat-correct').textContent = cor;
+  document.getElementById('stat-wrong').textContent = wrong;
+  document.getElementById('stat-skip').textContent = skip;
+  document.getElementById('result-pct').textContent = pct + '%';
+
+  let title, sub;
+  if (pct >= 80) { title = '🏆 Excellent!'; sub = 'Outstanding performance! You are well prepared for BECE.'; }
+  else if (pct >= 60) { title = '🎉 Good Work!'; sub = 'Good effort. Keep revising your B7 notes.'; }
+  else if (pct >= 40) { title = '📖 Keep Studying!'; sub = 'Review your answers below and try again.'; }
+  else { title = '💪 Try Again!'; sub = 'Study your B7 syllabus carefully and retry.'; }
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-sub').textContent = sub;
+
+  const col = pct >= 70 ? '#0a7c4b' : pct >= 50 ? '#f59e0b' : '#dc2626';
+  const ring = document.getElementById('result-ring'); ring.style.stroke = col;
+  document.getElementById('review-section').style.display = 'none';
+  showScreen('results');
+
+  const graded = result.graded || [];
+  const L = ['A','B','C','D'];
+  document.getElementById('review-list').innerHTML = state.questions.map((q, i) => {
+    const g = graded[i];
+    const ua = g ? g.user_answer : state.answers[i];
+    const isC = g ? g.correct : false;
+    const isS = ua === -1 || ua === undefined || ua === null;
+    const cls = isC ? 'cq' : isS ? 'sq' : 'wq';
+    let options;
+    try { options = typeof q.options === 'string' ? JSON.parse(q.options) : q.options; } catch(e) { options = q.options || []; }
+    const badge = isC ? '<span class="rev-badge rb-c">✓ Correct</span>' : isS ? '<span class="rev-badge rb-s">⏰ Timed Out</span>' : '<span class="rev-badge rb-w">✗ Wrong</span>';
+    let ans = `<div class="rev-ans">Correct answer: <span class="ca">${L[q.answer]}. ${options[q.answer] || ''}</span>`;
+    if (!isC && !isS && ua != null) ans += ` &nbsp;|&nbsp; Your answer: <span class="wa">${L[ua]}. ${options[ua] || ''}</span>`;
+    ans += '</div>';
+    return `<div class="rev-item ${cls}"><div class="rev-header"><span class="rev-q">${i+1}. ${q.question_text}</span>${badge}</div>${ans}</div>`;
+  }).join('');
+
+  setTimeout(() => { ring.style.strokeDashoffset = 345.4 * (1 - pct / 100); }, 120);
+}
+
+function toggleReview() {
+  const sec = document.getElementById('review-section');
+  if (sec.style.display !== 'none') { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function retryQuiz() { document.getElementById('review-section').style.display = 'none'; startQuiz(state.quiz.id); }
+function goHome() { clearTimer(); showSubjects(); }
+
+initApp();
+</script>
+</body>
+</html>
