@@ -161,7 +161,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
   <header class="header">
     <div class="logo" onclick="location.reload()">🇬🇭</div>
     <div>
-      <h1>JHS QuizMaster — B7</h1>
+      <h1>JHS QuizMaster</h1>
       <p>NaCCA Common Core Programme · BECE-Style Objective Questions</p>
     </div>
     <div class="user-bar" id="user-bar"></div>
@@ -196,7 +196,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
 
   <div class="screen" id="screen-subjects">
     <p class="page-title">Select a Subject</p>
-    <p class="page-sub" id="subjects-sub">B7 (JHS 1) Syllabus · NaCCA Common Core Programme</p>
+    <p class="page-sub" id="subjects-sub">NaCCA Common Core Programme · BECE-Style Objective Questions</p>
     <div class="top-actions" id="top-actions">
       <button class="active" onclick="showSubjects()">📚 Subjects</button>
       <button onclick="showProgress()">📊 My Progress</button>
@@ -419,7 +419,7 @@ async function showSubjects() {
         <p>${s.description || ''}</p>
         <span class="quiz-count-badge">${s.quizzes ? s.quizzes.length : 0} quizzes · 40 Qs each</span>
       </div>`).join('');
-    document.getElementById('subjects-sub').textContent = `B7 (JHS 1) Syllabus · NaCCA Common Core Programme · Logged in as ${state.user.username}`;
+    document.getElementById('subjects-sub').textContent = `NaCCA Common Core Programme · BECE-Style Objective Questions · Logged in as ${state.user.username}`;
     renderProgressSummary();
   } catch (e) {
     grid.innerHTML = `<p style="color:var(--danger)">Failed to load: ${e.message}</p>`;
@@ -485,7 +485,7 @@ async function selectSubject(id) {
     if (!subject) return;
     state.subject = subject;
     document.getElementById('ql-heading').textContent = subject.name;
-    document.getElementById('ql-sub').textContent = `NaCCA B7 Syllabus · ${subject.icon || ''} BECE-Style Objective Questions`;
+    document.getElementById('ql-sub').textContent = `${subject.icon || ''} BECE-Style Objective Questions`;
     document.getElementById('quiz-list').innerHTML = (subject.quizzes || []).map(q => {
       const locked = inProgressQuiz && inProgressQuiz.quiz_id !== q.id;
       return `<div class="quiz-item" style="${locked ? 'opacity:.5;cursor:not-allowed;' : ''}" onclick="${locked ? '' : "startQuiz('" + q.id + "')"}">
@@ -644,9 +644,9 @@ function showResults(result) {
 
   let title, sub;
   if (pct >= 80) { title = '🏆 Excellent!'; sub = 'Outstanding performance! You are well prepared for BECE.'; }
-  else if (pct >= 60) { title = '🎉 Good Work!'; sub = 'Good effort. Keep revising your B7 notes.'; }
+  else if (pct >= 60) { title = '🎉 Good Work!'; sub = 'Good effort. Keep revising your notes.'; }
   else if (pct >= 40) { title = '📖 Keep Studying!'; sub = 'Review your answers below and try again.'; }
-  else { title = '💪 Try Again!'; sub = 'Study your B7 syllabus carefully and retry.'; }
+  else { title = '💪 Try Again!'; sub = 'Study your syllabus carefully and retry.'; }
   document.getElementById('result-title').textContent = title;
   document.getElementById('result-sub').textContent = sub;
 

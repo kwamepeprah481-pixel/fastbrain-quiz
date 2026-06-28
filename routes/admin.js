@@ -14,6 +14,18 @@ async function logAction(adminId, action, details) {
 router.get('/users', async (req, res) => {
   try {
     const users = await db.all('SELECT id, email, username, role, created_at FROM users ORDER BY created_at DESC');
+    for (const u of users) {
+      const stats = await db.get(
+        `SELECT COUNT(*) as quizzes_taken, COALESCE(SUM(score), 0) as total_correct, COALESCE(SUM(total), 0) as total_questions,
+                ROUND(AVG(CAST(score AS REAL) / NULLIF(CAST(total AS REAL), 0) * 100), 1) as avg_percent
+         FROM quiz_attempts WHERE user_id = ? AND status = ?`,
+        [u.id, 'completed']
+      );
+      u.quizzes_taken = stats.quizzes_taken || 0;
+      u.total_correct = stats.total_correct || 0;
+      u.total_questions = stats.total_questions || 0;
+      u.avg_percent = stats.avg_percent || 0;
+    }
     res.json(users);
   } catch (e) {
     res.status(500).json({ error: e.message });
