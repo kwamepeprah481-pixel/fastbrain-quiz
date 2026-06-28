@@ -118,7 +118,10 @@ function createTables(db) {
 
 function trySeed(db) {
   const rows = db.exec('SELECT COUNT(*) as cnt FROM subjects');
-  if (rows.length > 0 && rows[0].values[0][0] > 0) return;
+  if (rows.length > 0 && rows[0].values[0][0] > 0) {
+    db.run("UPDATE subjects SET icon = ''");
+    return;
+  }
   if (!fs.existsSync(HTML_PATH)) { console.log('Seed file not found:', HTML_PATH); return; }
   let buf = fs.readFileSync(HTML_PATH);
   let html;
@@ -143,7 +146,7 @@ function trySeed(db) {
   db.run('DELETE FROM quizzes');
   db.run('DELETE FROM subjects');
   for (const s of DATA.subjects) {
-    db.run('INSERT INTO subjects (id, name, icon, description, color_class) VALUES (?, ?, ?, ?, ?)', [s.id, s.name, s.icon, s.desc, s.cls]);
+    db.run('INSERT INTO subjects (id, name, icon, description, color_class) VALUES (?, ?, ?, ?, ?)', [s.id, s.name, '', s.desc, s.cls]);
   }
   for (const [qid, quiz] of Object.entries(DATA.quizzes)) {
     const subj = DATA.subjects.find(s => s.quizzes.includes(qid));
