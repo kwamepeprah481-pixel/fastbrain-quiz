@@ -18,11 +18,21 @@ app.use('/api/admin/materials', require('./routes/materials'));
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 
-app.get('/', (req, res) => res.sendFile(path.join(PUBLIC, 'index.html')));
-app.get('/admin.html', (req, res) => res.sendFile(path.join(PUBLIC, 'admin.html')));
+app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.sendFile(path.join(PUBLIC, 'index.html'));
+});
+app.get('/admin.html', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.sendFile(path.join(PUBLIC, 'admin.html'));
+});
 app.get('*', (req, res) => {
   const p = path.join(PUBLIC, req.path === '/' ? 'index.html' : req.path);
-  if (fs.existsSync(p)) return res.sendFile(p);
+  if (fs.existsSync(p)) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    return res.sendFile(p);
+  }
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.sendFile(path.join(PUBLIC, 'index.html'));
 });
 
