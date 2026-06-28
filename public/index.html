@@ -505,8 +505,14 @@ async function startQuiz(quizId, resume = false) {
       attempt = await api('/quizzes/' + quizId + '/start', { method: 'POST' });
       const ans = JSON.parse(attempt.answers || '[]');
       state.questions = attempt.questions;
-      state.currentQ = ans.length;
       state.score = attempt.score || 0;
+      if (ans.length >= state.questions.length) {
+        const result = await api('/quizzes/' + quizId + '/submit', { method: 'POST', body: JSON.stringify({ answers: ans }) });
+        state.score = result.score;
+        showResults(result);
+        return;
+      }
+      state.currentQ = ans.length;
       state.answers = ans.length === state.questions.length ? ans : [...ans, ...Array(state.questions.length - ans.length).fill(null)];
       state.graded = [];
       inProgressQuiz = null;
