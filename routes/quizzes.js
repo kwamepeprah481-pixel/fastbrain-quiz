@@ -58,7 +58,13 @@ router.post('/quizzes/:quizId/start', authMiddleware, async (req, res) => {
       'SELECT * FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? AND status = ?',
       [req.user.id, req.params.quizId, 'in_progress']
     );
-    if (existing) return res.json(existing);
+    if (existing) {
+      const questions = await db.all(
+        'SELECT id, question_text, options, answer, question_order FROM questions WHERE quiz_id = ? ORDER BY question_order',
+        [req.params.quizId]
+      );
+      return res.json({ ...existing, questions });
+    }
     const quiz = await db.get('SELECT * FROM quizzes WHERE id = ?', [req.params.quizId]);
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
     const questions = await db.all(
