@@ -358,9 +358,8 @@ async function handleAuth(e) {
     state.user = data.user;
     renderUserBar();
     if (state.user.role === 'admin') {
-      if (confirm('You are logged in as Admin. Open the admin panel?')) {
-        window.open('/admin.html', '_blank');
-      }
+      window.location.href = '/admin.html';
+      return;
     }
     initApp();
   } catch (err) {
