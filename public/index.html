@@ -506,7 +506,8 @@ async function startQuiz(quizId, resume = false) {
       const ans = JSON.parse(attempt.answers || '[]');
       state.questions = attempt.questions;
       state.score = attempt.score || 0;
-      state.currentQ = Math.min(ans.length, Math.max(state.questions.length - 1, 0));
+      const firstNull = ans.indexOf(null);
+      state.currentQ = firstNull >= 0 ? firstNull : state.questions.length - 1;
       state.answers = ans.length === state.questions.length ? ans : [...ans, ...Array(state.questions.length - ans.length).fill(null)];
       state.graded = [];
       inProgressQuiz = null;
