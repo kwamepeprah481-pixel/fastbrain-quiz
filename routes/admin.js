@@ -90,7 +90,7 @@ router.post('/subjects', async (req, res) => {
     const { id, name, icon, description, color_class } = req.body;
     if (!id || !name) return res.status(400).json({ error: 'Subject ID and name required' });
     await db.run('INSERT OR REPLACE INTO subjects (id, name, icon, description, color_class) VALUES (?, ?, ?, ?, ?)',
-      [id, name, icon || '📘', description || '', color_class || '']);
+      [id, name, icon || '', description || '', color_class || '']);
     await logAction(req.user.id, 'create_subject', { id, name });
     res.json({ success: true });
   } catch (e) {
@@ -216,7 +216,7 @@ router.post('/import-bulk', async (req, res) => {
     }
     for (const s of data.subjects) {
       await db.run('INSERT OR REPLACE INTO subjects (id, name, icon, description, color_class) VALUES (?, ?, ?, ?, ?)',
-        [s.id, s.name, s.icon || '📘', s.desc || '', s.cls || '']);
+        [s.id, s.name, s.icon || '', s.desc || '', s.cls || '']);
     }
     let totalQuestions = 0;
     for (const [qid, quiz] of Object.entries(data.quizzes)) {
