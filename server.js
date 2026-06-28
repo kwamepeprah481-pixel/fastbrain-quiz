@@ -5,6 +5,7 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const PUBLIC = path.join(__dirname, 'public');
+const db = require('./db');
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
