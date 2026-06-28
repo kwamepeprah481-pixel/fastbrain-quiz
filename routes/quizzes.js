@@ -162,17 +162,17 @@ router.get('/progress', authMiddleware, async (req, res) => {
        FROM quiz_attempts qa
        JOIN quizzes q ON qa.quiz_id = q.id
        JOIN subjects s ON q.subject_id = s.id
-       WHERE qa.user_id = ?
+       WHERE qa.user_id = ? AND qa.status = ?
        ORDER BY qa.completed_at DESC`,
-      [req.user.id]
+      [req.user.id, 'completed']
     );
     const stats = await db.get(
       `SELECT COUNT(*) as total_attempts,
               COALESCE(SUM(score), 0) as total_correct,
               COALESCE(SUM(total), 0) as total_questions,
               ROUND(AVG(CAST(score AS REAL) / CAST(total AS REAL) * 100), 1) as avg_percent
-       FROM quiz_attempts WHERE user_id = ?`,
-      [req.user.id]
+       FROM quiz_attempts WHERE user_id = ? AND status = ?`,
+      [req.user.id, 'completed']
     );
     res.json({ attempts, stats });
   } catch (e) {
