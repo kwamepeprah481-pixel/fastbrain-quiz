@@ -16,6 +16,28 @@ router.get('/subjects', async (req, res) => {
   }
 });
 
+router.get('/quizzes/in-progress', authMiddleware, async (req, res) => {
+  try {
+    const attempt = await db.get(
+      `SELECT qa.*, q.title as quiz_title, q.difficulty, s.name as subject_name, s.id as subject_id
+       FROM quiz_attempts qa
+       JOIN quizzes q ON qa.quiz_id = q.id
+       JOIN subjects s ON q.subject_id = s.id
+       WHERE qa.user_id = ? AND qa.status = ?
+       ORDER BY qa.id DESC LIMIT 1`,
+      [req.user.id, 'in_progress']
+    );
+    if (!attempt) return res.json(null);
+    const questions = await db.all(
+      'SELECT id, question_text, options, answer, question_order FROM questions WHERE quiz_id = ? ORDER BY question_order',
+      [attempt.quiz_id]
+    );
+    res.json({ ...attempt, questions });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.get('/quizzes/:quizId', authMiddleware, async (req, res) => {
   try {
     const quiz = await db.get('SELECT * FROM quizzes WHERE id = ?', [req.params.quizId]);
@@ -71,28 +93,6 @@ router.post('/quizzes/:quizId/save-progress', authMiddleware, async (req, res) =
       [JSON.stringify(answers), score || 0, attempt.id]
     );
     res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-router.get('/quizzes/in-progress', authMiddleware, async (req, res) => {
-  try {
-    const attempt = await db.get(
-      `SELECT qa.*, q.title as quiz_title, q.difficulty, s.name as subject_name, s.id as subject_id
-       FROM quiz_attempts qa
-       JOIN quizzes q ON qa.quiz_id = q.id
-       JOIN subjects s ON q.subject_id = s.id
-       WHERE qa.user_id = ? AND qa.status = ?
-       ORDER BY qa.id DESC LIMIT 1`,
-      [req.user.id, 'in_progress']
-    );
-    if (!attempt) return res.json(null);
-    const questions = await db.all(
-      'SELECT id, question_text, options, answer, question_order FROM questions WHERE quiz_id = ? ORDER BY question_order',
-      [attempt.quiz_id]
-    );
-    res.json({ ...attempt, questions });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
