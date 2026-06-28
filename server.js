@@ -13,8 +13,15 @@ app.use('/api', require('./routes/quizzes'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/admin/materials', require('./routes/materials'));
 
+app.get('/health', (req, res) => res.json({ ok: true }));
+
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const filePath = path.join(__dirname, 'public', 'index.html');
+  if (require('fs').existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('index.html not found at ' + filePath);
+  }
 });
 
 app.use((err, req, res, _next) => {

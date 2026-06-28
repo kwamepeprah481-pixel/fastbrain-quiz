@@ -19,7 +19,7 @@ async function getDb() {
   }
   enableWAL(db);
   createTables(db);
-  trySeed(db);
+  try { trySeed(db); } catch (e) { console.error('Seed error:', e.message); }
   return db;
 }
 
