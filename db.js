@@ -117,11 +117,6 @@ function createTables(db) {
 }
 
 function trySeed(db) {
-  const rows = db.exec('SELECT COUNT(*) as cnt FROM subjects');
-  if (rows.length > 0 && rows[0].values[0][0] > 0) {
-    db.run("UPDATE subjects SET icon = ''");
-    return;
-  }
   if (!fs.existsSync(HTML_PATH)) { console.log('Seed file not found:', HTML_PATH); return; }
   let buf = fs.readFileSync(HTML_PATH);
   let html;
