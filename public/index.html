@@ -114,6 +114,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
 .home-btn{width:100%;background:none;border:1px solid var(--border);border-radius:44px;padding:12px;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;margin-top:.5rem;}
 .home-btn:hover{border-color:var(--text);color:var(--text);background:var(--accent-bg);}
 @keyframes pop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
 .pop{animation:pop .22s ease forwards;}
 .auth-form{max-width:380px;margin:2rem auto;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;box-shadow:var(--shadow-md);}
 .auth-form h2{font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px;text-align:center;}
@@ -166,7 +167,14 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
     <div class="user-bar" id="user-bar"></div>
   </header>
 
-  <div class="screen active" id="screen-auth">
+  <div class="screen active" id="screen-loading">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;">
+      <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;"></div>
+      <p style="color:var(--muted);font-size:14px;">Loading...</p>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-auth">
     <div class="auth-form" id="auth-form-container">
       <h2 id="auth-title">Welcome Back</h2>
       <p class="auth-sub" id="auth-sub">Sign in to continue your studies</p>
