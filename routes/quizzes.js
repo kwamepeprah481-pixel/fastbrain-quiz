@@ -58,20 +58,15 @@ router.post('/quizzes/:quizId/start', authMiddleware, async (req, res) => {
       'SELECT * FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? AND status = ?',
       [req.user.id, req.params.quizId, 'in_progress']
     );
-    if (existing) {
-      const questions = await db.all(
-        'SELECT id, question_text, options, answer, question_order FROM questions WHERE quiz_id = ? ORDER BY question_order',
-        [req.params.quizId]
-      );
-      return res.json({ ...existing, questions });
-    }
-    const quiz = await db.get('SELECT * FROM quizzes WHERE id = ?', [req.params.quizId]);
-    if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
     const questions = await db.all(
       'SELECT id, question_text, options, answer, question_order FROM questions WHERE quiz_id = ? ORDER BY question_order',
       [req.params.quizId]
     );
+    if (existing) return res.json({ ...existing, questions });
+    const quiz = await db.get('SELECT * FROM quizzes WHERE id = ?', [req.params.quizId]);
+    if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
     const total = questions.length;
+    if (total === 0) return res.status(400).json({ error: 'Quiz has no questions' });
     await db.run(
       'INSERT INTO quiz_attempts (user_id, quiz_id, score, total, answers, status) VALUES (?, ?, 0, ?, ?, ?)',
       [req.user.id, req.params.quizId, total, JSON.stringify([]), 'in_progress']
@@ -196,6 +191,19 @@ router.get('/progress/:quizId', authMiddleware, async (req, res) => {
       [req.user.id, req.params.quizId]
     );
     res.json(attempts);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get('/debug/questions/:quizId', async (req, res) => {
+  try {
+    const q = await db.get('SELECT id, title FROM quizzes WHERE id = ?', [req.params.quizId]);
+    const questions = await db.all(
+      'SELECT id, question_text, options, answer, question_order FROM questions WHERE quiz_id = ? ORDER BY question_order',
+      [req.params.quizId]
+    );
+    res.json({ quiz: q, questionCount: questions.length, first: questions[0] || null });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

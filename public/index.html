@@ -518,6 +518,9 @@ async function startQuiz(quizId, resume = false) {
       state.answers = Array(state.questions.length).fill(null);
       state.graded = [];
     }
+    if (!state.questions || state.questions.length === 0) {
+      throw new Error('Quiz has no questions');
+    }
     state.quiz = { id: quizId, title: attempt.quiz_title || attempt.quiz_id, questions: state.questions };
     document.getElementById('q-subj-tag').textContent = state.quiz.title;
     showScreen('quiz');
