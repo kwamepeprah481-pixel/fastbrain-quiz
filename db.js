@@ -79,7 +79,8 @@ function createTables(db) {
       score INTEGER NOT NULL,
       total INTEGER NOT NULL,
       answers TEXT,
-      completed_at TEXT DEFAULT (datetime('now')),
+      status TEXT DEFAULT 'in_progress',
+      completed_at TEXT,
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (quiz_id) REFERENCES quizzes(id)
     )

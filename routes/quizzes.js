@@ -30,6 +30,86 @@ router.get('/quizzes/:quizId', authMiddleware, async (req, res) => {
   }
 });
 
+router.post('/quizzes/:quizId/start', authMiddleware, async (req, res) => {
+  try {
+    const existing = await db.get(
+      'SELECT * FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? AND status = ?',
+      [req.user.id, req.params.quizId, 'in_progress']
+    );
+    if (existing) return res.json(existing);
+    const quiz = await db.get('SELECT * FROM quizzes WHERE id = ?', [req.params.quizId]);
+    if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+    const questions = await db.all(
+      'SELECT id, question_text, options, answer, question_order FROM questions WHERE quiz_id = ? ORDER BY question_order',
+      [req.params.quizId]
+    );
+    const total = questions.length;
+    await db.run(
+      'INSERT INTO quiz_attempts (user_id, quiz_id, score, total, answers, status) VALUES (?, ?, 0, ?, ?, ?)',
+      [req.user.id, req.params.quizId, total, JSON.stringify([]), 'in_progress']
+    );
+    const attempt = await db.get(
+      'SELECT * FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? AND status = ?',
+      [req.user.id, req.params.quizId, 'in_progress']
+    );
+    res.json({ ...attempt, questions });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/quizzes/:quizId/save-progress', authMiddleware, async (req, res) => {
+  try {
+    const { answers, score } = req.body;
+    const attempt = await db.get(
+      'SELECT id FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? AND status = ?',
+      [req.user.id, req.params.quizId, 'in_progress']
+    );
+    if (!attempt) return res.status(404).json({ error: 'No active quiz session' });
+    await db.run(
+      'UPDATE quiz_attempts SET answers = ?, score = ? WHERE id = ?',
+      [JSON.stringify(answers), score || 0, attempt.id]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get('/quizzes/in-progress', authMiddleware, async (req, res) => {
+  try {
+    const attempt = await db.get(
+      `SELECT qa.*, q.title as quiz_title, q.difficulty, s.name as subject_name, s.id as subject_id
+       FROM quiz_attempts qa
+       JOIN quizzes q ON qa.quiz_id = q.id
+       JOIN subjects s ON q.subject_id = s.id
+       WHERE qa.user_id = ? AND qa.status = ?
+       ORDER BY qa.id DESC LIMIT 1`,
+      [req.user.id, 'in_progress']
+    );
+    if (!attempt) return res.json(null);
+    const questions = await db.all(
+      'SELECT id, question_text, options, answer, question_order FROM questions WHERE quiz_id = ? ORDER BY question_order',
+      [attempt.quiz_id]
+    );
+    res.json({ ...attempt, questions });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/quizzes/:quizId/abandon', authMiddleware, async (req, res) => {
+  try {
+    await db.run(
+      'UPDATE quiz_attempts SET status = ?, completed_at = datetime(?) WHERE user_id = ? AND quiz_id = ? AND status = ?',
+      ['abandoned', 'now', req.user.id, req.params.quizId, 'in_progress']
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.post('/quizzes/:quizId/submit', authMiddleware, async (req, res) => {
   try {
     const { answers } = req.body;
@@ -49,10 +129,21 @@ router.post('/quizzes/:quizId/submit', authMiddleware, async (req, res) => {
       if (correct) score++;
       return { question_id: questions[i].id, user_answer: a, correct_answer: questions[i].answer, correct };
     });
-    await db.run(
-      'INSERT INTO quiz_attempts (user_id, quiz_id, score, total, answers) VALUES (?, ?, ?, ?, ?)',
-      [req.user.id, req.params.quizId, score, questions.length, JSON.stringify(answers)]
+    const existing = await db.get(
+      'SELECT id FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? AND status = ?',
+      [req.user.id, req.params.quizId, 'in_progress']
     );
+    if (existing) {
+      await db.run(
+        'UPDATE quiz_attempts SET score = ?, answers = ?, status = ?, completed_at = datetime(?) WHERE id = ?',
+        [score, JSON.stringify(answers), 'completed', 'now', existing.id]
+      );
+    } else {
+      await db.run(
+        'INSERT INTO quiz_attempts (user_id, quiz_id, score, total, answers, status, completed_at) VALUES (?, ?, ?, ?, ?, ?, datetime(?))',
+        [req.user.id, req.params.quizId, score, questions.length, JSON.stringify(answers), 'completed', 'now']
+      );
+    }
     const attempt = await db.get(
       'SELECT id, score, total, completed_at FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? ORDER BY id DESC LIMIT 1',
       [req.user.id, req.params.quizId]

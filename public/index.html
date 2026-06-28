@@ -214,6 +214,22 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
     <div id="progress-content"></div>
   </div>
 
+  <div class="screen" id="screen-resume">
+    <p class="page-title">Unfinished Quiz</p>
+    <p class="page-sub">You have a quiz in progress</p>
+    <div id="resume-card" class="card" style="text-align:center;padding:2rem;">
+      <div style="font-size:48px;margin-bottom:12px;">📝</div>
+      <h3 id="resume-title" style="margin-bottom:4px;"></h3>
+      <p id="resume-meta" style="color:var(--muted);font-size:13px;margin-bottom:6px;"></p>
+      <p id="resume-progress" style="font-size:14px;color:var(--accent);font-weight:600;margin-bottom:1.5rem;"></p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn" onclick="resumeQuiz()">▶ Continue Quiz</button>
+        <button class="btn-sm danger" onclick="abandonQuiz()">✕ Abandon</button>
+        <button class="btn-sm" onclick="showSubjects()">← All Subjects</button>
+      </div>
+    </div>
+  </div>
+
   <div class="screen" id="screen-quizlist">
     <button class="back-btn" onclick="showSubjects()">← All Subjects</button>
     <p class="page-title" id="ql-heading"></p>
@@ -376,9 +392,17 @@ function logout() {
   showScreen('auth');
 }
 
+let inProgressQuiz = null;
+
 async function initApp() {
   const authed = await checkAuth();
-  if (authed) showSubjects();
+  if (!authed) return;
+  inProgressQuiz = await api('/quizzes/in-progress');
+  if (inProgressQuiz) {
+    showResumeScreen();
+  } else {
+    showSubjects();
+  }
 }
 
 async function showSubjects() {
@@ -434,6 +458,26 @@ async function showProgress() {
   await renderProgressSummary();
 }
 
+function showResumeScreen() {
+  if (!inProgressQuiz) return;
+  document.getElementById('resume-title').textContent = inProgressQuiz.quiz_title;
+  document.getElementById('resume-meta').textContent = `${inProgressQuiz.subject_name} · ${inProgressQuiz.difficulty}`;
+  const ans = JSON.parse(inProgressQuiz.answers || '[]');
+  document.getElementById('resume-progress').textContent = `Progress: ${ans.length} of ${inProgressQuiz.total} questions answered`;
+  showScreen('resume');
+}
+
+async function resumeQuiz() {
+  await startQuiz(inProgressQuiz.quiz_id, true);
+}
+
+async function abandonQuiz() {
+  if (!confirm('Abandon this quiz? Your progress will be lost.')) return;
+  await api('/quizzes/' + inProgressQuiz.quiz_id + '/abandon', { method: 'POST' });
+  inProgressQuiz = null;
+  showSubjects();
+}
+
 async function selectSubject(id) {
   try {
     const subjects = await api('/subjects');
@@ -442,27 +486,41 @@ async function selectSubject(id) {
     state.subject = subject;
     document.getElementById('ql-heading').textContent = subject.name;
     document.getElementById('ql-sub').textContent = `NaCCA B7 Syllabus · ${subject.icon || ''} BECE-Style Objective Questions`;
-    document.getElementById('quiz-list').innerHTML = (subject.quizzes || []).map(q => `
-      <div class="quiz-item" onclick="startQuiz('${q.id}')">
-        <div class="qi-info"><h4>${q.title}</h4><p>${q.description || ''}</p></div>
+    document.getElementById('quiz-list').innerHTML = (subject.quizzes || []).map(q => {
+      const locked = inProgressQuiz && inProgressQuiz.quiz_id !== q.id;
+      return `<div class="quiz-item" style="${locked ? 'opacity:.5;cursor:not-allowed;' : ''}" onclick="${locked ? '' : "startQuiz('" + q.id + "')"}">
+        <div class="qi-info"><h4>${q.title}${locked ? ' 🔒' : ''}</h4><p>${q.description || ''}${locked ? ' (complete current quiz first)' : ''}</p></div>
         <div style="display:flex;align-items:center;gap:8px"><span class="badge badge-${q.difficulty}">${q.difficulty}</span><span class="arrow-ic">›</span></div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     showScreen('quizlist');
   } catch (e) {
     alert('Failed to load: ' + e.message);
   }
 }
 
-async function startQuiz(quizId) {
+async function startQuiz(quizId, resume = false) {
   try {
-    const quiz = await api('/quizzes/' + quizId);
-    state.quiz = quiz;
-    state.questions = quiz.questions;
-    state.currentQ = 0;
-    state.score = 0;
-    state.answers = Array(state.questions.length).fill(null);
-    state.graded = [];
-    document.getElementById('q-subj-tag').textContent = quiz.title;
+    let attempt;
+    if (resume) {
+      attempt = await api('/quizzes/' + quizId + '/start');
+      const ans = JSON.parse(attempt.answers || '[]');
+      state.questions = attempt.questions;
+      state.currentQ = ans.length;
+      state.score = attempt.score || 0;
+      state.answers = ans.length === state.questions.length ? ans : [...ans, ...Array(state.questions.length - ans.length).fill(null)];
+      state.graded = [];
+      inProgressQuiz = null;
+    } else {
+      attempt = await api('/quizzes/' + quizId + '/start');
+      state.questions = attempt.questions;
+      state.currentQ = 0;
+      state.score = 0;
+      state.answers = Array(state.questions.length).fill(null);
+      state.graded = [];
+    }
+    state.quiz = { id: quizId, title: attempt.quiz_title || attempt.quiz_id, questions: state.questions };
+    document.getElementById('q-subj-tag').textContent = state.quiz.title;
     showScreen('quiz');
     renderQ();
   } catch (e) {
@@ -510,6 +568,16 @@ function selectAns(idx) {
   else { fb.textContent = `✗ Wrong! Correct answer: ${L[q.answer]}. ${options[q.answer]}`; fb.className = 'fb wrong'; }
   fb.style.display = 'inline-flex';
   document.getElementById('next-btn').disabled = false;
+  saveProgress();
+}
+
+function saveProgress() {
+  const quizId = state.quiz ? state.quiz.id : null;
+  if (!quizId) return;
+  api('/quizzes/' + quizId + '/save-progress', {
+    method: 'POST',
+    body: JSON.stringify({ answers: state.answers, score: state.score })
+  }).catch(() => {});
 }
 
 function nextQuestion() {
@@ -544,6 +612,7 @@ function timeOut() {
   const L = ['A','B','C','D'];
   fb.textContent = `⏰ Time up! Correct: ${L[q.answer]}`; fb.className = 'fb timeout'; fb.style.display = 'inline-flex';
   document.getElementById('next-btn').disabled = false;
+  saveProgress();
 }
 
 async function submitAndShowResults() {
@@ -614,7 +683,12 @@ function toggleReview() {
 }
 
 function retryQuiz() { document.getElementById('review-section').style.display = 'none'; startQuiz(state.quiz.id); }
-function goHome() { clearTimer(); showSubjects(); }
+async function goHome() {
+  clearTimer();
+  inProgressQuiz = await api('/quizzes/in-progress');
+  if (inProgressQuiz) showResumeScreen();
+  else showSubjects();
+}
 
 initApp();
 </script>
