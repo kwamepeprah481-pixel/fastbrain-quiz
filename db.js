@@ -114,11 +114,26 @@ function createTables(db) {
 function trySeed(db) {
   const rows = db.exec('SELECT COUNT(*) as cnt FROM subjects');
   if (rows.length > 0 && rows[0].values[0][0] > 0) return;
-  if (!fs.existsSync(HTML_PATH)) return;
-  const html = fs.readFileSync(HTML_PATH, 'utf-8');
-  const m = html.match(/const DATA\s*=\s*({[\s\S]*?});/);
-  if (!m) return;
-  const DATA = eval('(' + m[1] + ')');
+  if (!fs.existsSync(HTML_PATH)) { console.log('Seed file not found:', HTML_PATH); return; }
+  let buf = fs.readFileSync(HTML_PATH);
+  let html;
+  if (buf[0] === 0xFF && buf[1] === 0xFE) {
+    html = buf.toString('utf16le');
+  } else {
+    html = buf.toString('utf-8');
+  }
+  const startIdx = html.indexOf('const DATA = {');
+  if (startIdx === -1) { console.log('DATA not found in seed file'); return; }
+  let depth = 0;
+  let endIdx = startIdx + 13;
+  for (let i = startIdx + 14; i < html.length; i++) {
+    if (html[i] === '{') depth++;
+    else if (html[i] === '}') { depth--; if (depth < 0) { endIdx = i + 1; break; } }
+  }
+  const dataStr = html.substring(startIdx + 13, endIdx);
+  let DATA;
+  try { DATA = eval('(' + dataStr + ')'); } catch (e) { console.error('eval failed:', e.message); return; }
+  if (!DATA || !DATA.subjects) { console.log('Invalid DATA structure'); return; }
   db.run('DELETE FROM questions');
   db.run('DELETE FROM quizzes');
   db.run('DELETE FROM subjects');
@@ -135,13 +150,9 @@ function trySeed(db) {
       }
     }
   }
-  const adminExists = db.exec('SELECT id FROM users WHERE email = "admin@quizmaster.com"');
-  if (adminExists.length === 0) {
-    const hash = bcrypt.hashSync('admin123', 10);
-    db.run('INSERT INTO users (email, username, password, role) VALUES (?, ?, ?, ?)', ['admin@quizmaster.com', 'admin', hash, 'admin']);
-  }
   saveDb(db);
-  console.log('Database auto-seeded successfully');
+  const cnt = db.exec('SELECT COUNT(*) as c FROM subjects')[0].values[0][0];
+  console.log('Database auto-seeded:', cnt, 'subjects');
 }
 
 function saveDb(db) {

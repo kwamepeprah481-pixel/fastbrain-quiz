@@ -49,13 +49,25 @@ async function seed() {
     action TEXT NOT NULL, details TEXT, created_at TEXT DEFAULT (datetime('now'))
   )`);
 
-  const html = fs.readFileSync(HTML_PATH, 'utf-8');
-  const dataMatch = html.match(/const DATA\s*=\s*({[\s\S]*?});/);
-  if (!dataMatch) {
+  let buf = fs.readFileSync(HTML_PATH);
+  let html;
+  if (buf[0] === 0xFF && buf[1] === 0xFE) {
+    html = buf.toString('utf16le');
+  } else {
+    html = buf.toString('utf-8');
+  }
+  const startIdx = html.indexOf('const DATA = {');
+  if (startIdx === -1) {
     console.error('Could not find DATA in HTML file');
     return;
   }
-  const DATA = eval('(' + dataMatch[1] + ')');
+  let depth = 0, endIdx = startIdx + 13;
+  for (let i = startIdx + 14; i < html.length; i++) {
+    if (html[i] === '{') depth++;
+    else if (html[i] === '}') { depth--; if (depth < 0) { endIdx = i + 1; break; } }
+  }
+  const dataStr = html.substring(startIdx + 13, endIdx);
+  const DATA = eval('(' + dataStr + ')');
 
   db.run('DELETE FROM questions');
   db.run('DELETE FROM quizzes');
