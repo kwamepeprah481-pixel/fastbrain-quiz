@@ -95,7 +95,6 @@ tr:hover td{background:var(--accent-bg);}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px;">
         <div><label>Subject ID</label><input id="subj-id" placeholder="e.g. eng, math"></div>
         <div><label>Name</label><input id="subj-name" placeholder="e.g. English Language"></div>
-        <div><label>Icon (emoji)</label><input id="subj-icon" placeholder="📖" value="📘"></div>
         <div><label>Color Class</label><input id="subj-cls" placeholder="eng"></div>
         <div class="full-width"><label>Description</label><input id="subj-desc" placeholder="Brief description"></div>
       </div>
@@ -288,14 +287,13 @@ async function loadSubjects() {
   try {
     const subs = await api('/subjects');
     document.getElementById('subjects-list').innerHTML = subs.length === 0 ? '<p style="color:var(--muted)">No subjects yet.</p>' :
-      `<div class="table-wrap"><table><tr><th>ID</th><th>Name</th><th>Icon</th><th>Quizzes</th><th></th></tr>${subs.map(s => `<tr><td>${s.id}</td><td>${s.name}</td><td>${s.icon || ''}</td><td>${(s.quizzes||[]).length}</td><td><button class="btn-sm" onclick='editSubject(${JSON.stringify(s).replace(/'/g,"\\'")})'>Edit</button> <button class="btn-sm danger" onclick="deleteSubject('${s.id}')">Delete</button></td></tr>`).join('')}</table></div>`;
+      `<div class="table-wrap"><table><tr><th>ID</th><th>Name</th><th>Quizzes</th><th></th></tr>${subs.map(s => `<tr><td>${s.id}</td><td>${s.name}</td><td>${(s.quizzes||[]).length}</td><td><button class="btn-sm" onclick='editSubject(${JSON.stringify(s).replace(/'/g,"\\'")})'>Edit</button> <button class="btn-sm danger" onclick="deleteSubject('${s.id}')">Delete</button></td></tr>`).join('')}</table></div>`;
   } catch (e) { document.getElementById('subjects-list').innerHTML = '<p style="color:var(--danger)">Error: ' + e.message + '</p>'; }
 }
 
 function editSubject(s) {
   document.getElementById('subj-id').value = s.id;
   document.getElementById('subj-name').value = s.name;
-  document.getElementById('subj-icon').value = s.icon || '';
   document.getElementById('subj-cls').value = s.color_class || '';
   document.getElementById('subj-desc').value = s.description || '';
 }
@@ -306,7 +304,7 @@ async function saveSubject() {
   if (!id || !name) { setMsg('Subject ID and Name are required', 'err'); return; }
   try {
     await api('/admin/subjects', { method: 'POST', body: JSON.stringify({
-      id, name, icon: document.getElementById('subj-icon').value, description: document.getElementById('subj-desc').value, color_class: document.getElementById('subj-cls').value
+      id, name, icon: '', description: document.getElementById('subj-desc').value, color_class: document.getElementById('subj-cls').value
     })});
     setMsg('Subject saved!', 'ok');
     loadSubjects();
