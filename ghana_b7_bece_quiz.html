@@ -1,4 +1,3 @@
-﻿
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,10 +153,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <body>
 <div class="app">
   <header class="header">
-    <div class="logo">­ƒç¼­ƒç¡</div>
+    <div class="logo">🇬🇭</div>
     <div>
-      <h1>JHS QuizMaster ÔÇö B7</h1>
-      <p>NaCCA Common Core Programme ┬À BECE-Style Objective Questions</p>
+      <h1>JHS QuizMaster</h1>
+      <p>NaCCA Common Core Programme · BECE-Style Objective Questions</p>
     </div>
     <div style="margin-left:auto;display:flex;flex-direction:column;gap:3px;align-items:center;">
       <div class="gh-flag"><div class="flag-r"></div><div class="flag-g"></div><div class="flag-gr"></div></div>
@@ -168,13 +167,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <!-- SCREEN 1: Subjects -->
   <div class="screen active" id="screen-subjects">
     <p class="page-title">Select a Subject</p>
-    <p class="page-sub">B7 (JHS 1) Syllabus ┬À NaCCA Common Core Programme ┬À 40 questions per quiz</p>
+    <p class="page-sub">NaCCA Common Core Programme · 40 questions per quiz</p>
     <div class="subject-grid" id="subject-grid"></div>
   </div>
 
   <!-- SCREEN 2: Quiz List -->
   <div class="screen" id="screen-quizlist">
-    <button class="back-btn" onclick="goBack('subjects')">ÔåÉ All Subjects</button>
+    <button class="back-btn" onclick="goBack('subjects')">← All Subjects</button>
     <p class="page-title" id="ql-heading"></p>
     <p class="page-sub" id="ql-sub"></p>
     <div id="quiz-list"></div>
@@ -205,7 +204,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     </div>
     <div class="options-grid" id="options-grid"></div>
     <div class="feedback-row"><div class="fb" id="feedback-msg" style="display:none"></div></div>
-    <button class="next-btn" id="next-btn" onclick="nextQuestion()" disabled>Next Question ÔåÆ</button>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()" disabled>Next Question →</button>
   </div>
 
   <!-- SCREEN 4: Results -->
@@ -228,14 +227,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       <div class="stat-card b"><div class="stat-val" id="stat-skip">0</div><div class="stat-label">Skipped</div></div>
     </div>
     <div class="result-actions">
-      <button class="btn-outline" onclick="retryQuiz()">­ƒöä Retry Quiz</button>
-      <button class="btn-primary" onclick="toggleReview()">­ƒôï Review Answers</button>
+      <button class="btn-outline" onclick="retryQuiz()">🔄 Retry Quiz</button>
+      <button class="btn-primary" onclick="toggleReview()">📋 Review Answers</button>
     </div>
     <div id="review-section" style="display:none">
       <p class="review-heading">Answer Review</p>
       <div id="review-list"></div>
     </div>
-    <button class="home-btn" onclick="goHome()">ÔåÉ Back to Subjects</button>
+    <button class="home-btn" onclick="goHome()">← Back to Subjects</button>
   </div>
 </div>
 
@@ -245,15 +244,15 @@ const TMAX = 40;
 
 const DATA = {
   subjects:[
-    {id:'eng',name:'English Language',icon:'­ƒôû',desc:'Grammar, Comprehension & Literature',cls:'eng',quizzes:['e1','e2']},
-    {id:'sci',name:'Integrated Science',icon:'­ƒö¼',desc:'Biology, Chemistry & Physics',cls:'sci',quizzes:['s1','s2']},
-    {id:'math',name:'Mathematics',icon:'­ƒôÉ',desc:'Number, Algebra & Geometry',cls:'math',quizzes:['m1','m2']},
-    {id:'soc',name:'Social Studies',icon:'­ƒîì',desc:'Environment, Society & Ghana',cls:'soc',quizzes:['so1','so2']},
-    {id:'comp',name:'Computing',icon:'­ƒÆ╗',desc:'ICT, Hardware & Word Processing',cls:'comp',quizzes:['c1','c2']},
+    {id:'eng',name:'English Language',icon:'📖',desc:'Grammar, Comprehension & Literature',cls:'eng',quizzes:['e1','e2']},
+    {id:'sci',name:'Integrated Science',icon:'🔬',desc:'Biology, Chemistry & Physics',cls:'sci',quizzes:['s1','s2']},
+    {id:'math',name:'Mathematics',icon:'📐',desc:'Number, Algebra & Geometry',cls:'math',quizzes:['m1','m2']},
+    {id:'soc',name:'Social Studies',icon:'🌍',desc:'Environment, Society & Ghana',cls:'soc',quizzes:['so1','so2']},
+    {id:'comp',name:'Computing',icon:'💻',desc:'ICT, Hardware & Word Processing',cls:'comp',quizzes:['c1','c2']},
   ],
   quizzes:{
-    e1:{id:'e1',title:'English Language ÔÇö Set A',desc:'40 questions ┬À Lexis & Structure, Grammar',difficulty:'medium',subj:'English Language',qs:[
-      {q:'Which of the following words contains the vowel sound /╔¬/ as in "sit"?',o:['seat','bit','beat','boot'],a:1},
+    e1:{id:'e1',title:'English Language — Set A',desc:'40 questions · Lexis & Structure, Grammar',difficulty:'medium',subj:'English Language',qs:[
+      {q:'Which of the following words contains the vowel sound /ɪ/ as in "sit"?',o:['seat','bit','beat','boot'],a:1},
       {q:'Choose the correct sentence: "Each of the boys ___ present."',o:['were','are','is','have been'],a:2},
       {q:'The word "beautiful" is a(n):',o:['noun','adverb','adjective','pronoun'],a:2},
       {q:'Which punctuation mark is used to end a question?',o:['Full stop','Comma','Question mark','Exclamation mark'],a:2},
@@ -294,7 +293,7 @@ const DATA = {
       {q:'Identify the type of noun in the word "crowd":',o:['proper noun','collective noun','abstract noun','material noun'],a:1},
       {q:'"She ___ to school every day." Fill in with the correct form of "go".',o:['go','gone','goes','going'],a:2},
     ]},
-    e2:{id:'e2',title:'English Language ÔÇö Set B',desc:'40 questions ┬À Comprehension & Usage',difficulty:'medium',subj:'English Language',qs:[
+    e2:{id:'e2',title:'English Language — Set B',desc:'40 questions · Comprehension & Usage',difficulty:'medium',subj:'English Language',qs:[
       {q:'Which of the following is an abstract noun?',o:['table','Kofi','courage','pen'],a:2},
       {q:'Choose the sentence with the correct use of apostrophe:',o:["The boy's bag is red.","The boys bag is red.","The boy\'s bag is red.","The boys' bag are red."],a:0},
       {q:'The word "ran" is in the ___ tense.',o:['present','future','past','perfect'],a:2},
@@ -314,7 +313,7 @@ const DATA = {
       {q:'Which sentence uses "fewer" correctly?',o:['There is fewer water today.','I have fewer books than you.','She has fewer milk.','We need fewer time.'],a:1},
       {q:'The prefix "mis-" in the word "mistake" means:',o:['good','wrong','before','again'],a:1},
       {q:'What is the plural of "curriculum"?',o:['curriculums','curricula','curriculumes','curriculum'],a:1},
-      {q:'Which sentence is in the simple future tense?',o:['I am eating.','I ate my food.','I will come tomorrow.','I have eaten.'],a:2},
+      {q:'Which sentence is in the simple future tense?',o:['I am eating.','I ate.','I will come tomorrow.','I have eaten.'],a:2},
       {q:'In the word "telephone", "tele" is a:',o:['suffix','prefix','root word','conjunction'],a:1},
       {q:'Choose the word that best completes: "I am ___ interested in sports."',o:['very','too','so','more'],a:0},
       {q:'The literary device in "The road was a ribbon of moonlight" is:',o:['simile','metaphor','hyperbole','alliteration'],a:1},
@@ -336,7 +335,7 @@ const DATA = {
       {q:'"Despite the rain, he went to school." The word "despite" functions as a:',o:['conjunction','preposition','adverb','interjection'],a:1},
       {q:'"What a wonderful performance!" This sentence is:',o:['interrogative','imperative','declarative','exclamatory'],a:3},
     ]},
-    s1:{id:'s1',title:'Integrated Science ÔÇö Set A',desc:'40 questions ┬À Biology & Living Things',difficulty:'medium',subj:'Integrated Science',qs:[
+    s1:{id:'s1',title:'Integrated Science — Set A',desc:'40 questions · Biology & Living Things',difficulty:'medium',subj:'Integrated Science',qs:[
       {q:'Which of the following is a characteristic of living things?',o:['Movement only','Respiration and reproduction','Eating only','Having a colour'],a:1},
       {q:'The basic unit of life is the:',o:['tissue','organ','cell','organism'],a:2},
       {q:'Which organelle is known as the "powerhouse of the cell"?',o:['nucleus','ribosome','mitochondria','cell wall'],a:2},
@@ -368,17 +367,17 @@ const DATA = {
       {q:'The bones and muscles working together form the ___ system.',o:['circulatory','nervous','musculo-skeletal','digestive'],a:2},
       {q:'Which nutrient is most important for building and repairing body tissues?',o:['carbohydrate','fat','protein','vitamin C'],a:2},
       {q:'Plants belonging to the same group as mosses and ferns are:',o:['flowering plants','non-flowering plants','conifers','algae'],a:1},
-      {q:'What is the correct order of the food chain below?',o:['Hawk ÔåÆ Grasshopper ÔåÆ Grass','Grass ÔåÆ Hawk ÔåÆ Grasshopper','Grass ÔåÆ Grasshopper ÔåÆ Hawk','Grasshopper ÔåÆ Grass ÔåÆ Hawk'],a:2},
+      {q:'What is the correct order of the food chain below?',o:['Hawk → Grasshopper → Grass','Grass → Hawk → Grasshopper','Grass → Grasshopper → Hawk','Grasshopper → Grass → Hawk'],a:2},
       {q:'The process by which plants make food using sunlight requires:',o:['water and carbon dioxide only','water, CO2 and chlorophyll','oxygen only','nitrogen and water'],a:1},
       {q:'Which blood vessel carries oxygenated blood from the lungs to the heart?',o:['pulmonary artery','pulmonary vein','aorta','vena cava'],a:1},
       {q:'Which of the following is an example of a physical change?',o:['burning paper','rusting iron','melting ice','baking a cake'],a:2},
       {q:'The layer of gases surrounding the Earth is called the:',o:['hydrosphere','lithosphere','atmosphere','biosphere'],a:2},
       {q:'Vitamins and minerals in the diet are mainly used for:',o:['energy','growth','regulating body processes','insulation'],a:2},
       {q:'Which of the following is NOT a property of matter?',o:['mass','volume','colour','energy'],a:3},
-      {q:'The normal body temperature of a healthy human being is approximately:',o:['25┬░C','37┬░C','40┬░C','45┬░C'],a:1},
+      {q:'The normal body temperature of a healthy human being is approximately:',o:['25°C','37°C','40°C','45°C'],a:1},
       {q:'Which of the following habitats is found in Ghana\'s forest zone?',o:['Desert','Mangrove forest','Savanna woodland','Tropical rainforest'],a:3},
     ]},
-    s2:{id:'s2',title:'Integrated Science ÔÇö Set B',desc:'40 questions ┬À Chemistry & Physics',difficulty:'medium',subj:'Integrated Science',qs:[
+    s2:{id:'s2',title:'Integrated Science — Set B',desc:'40 questions · Chemistry & Physics',difficulty:'medium',subj:'Integrated Science',qs:[
       {q:'Which state of matter has a fixed volume but no fixed shape?',o:['solid','liquid','gas','plasma'],a:1},
       {q:'The change of a solid directly into a gas is called:',o:['evaporation','condensation','sublimation','melting'],a:2},
       {q:'Which of the following is a mixture?',o:['water','salt','air','oxygen'],a:2},
@@ -397,7 +396,7 @@ const DATA = {
       {q:'The Earth completes one rotation on its axis in approximately:',o:['1 month','365 days','24 hours','7 days'],a:2},
       {q:'The force of attraction between objects due to their mass is called:',o:['magnetism','friction','gravity','electricity'],a:2},
       {q:'Which of the following is a renewable source of energy?',o:['coal','petroleum','natural gas','solar energy'],a:3},
-      {q:'The boiling point of pure water at sea level is:',o:['50┬░C','75┬░C','100┬░C','120┬░C'],a:2},
+      {q:'The boiling point of pure water at sea level is:',o:['50°C','75°C','100°C','120°C'],a:2},
       {q:'Which gas makes up about 78% of the Earth\'s atmosphere?',o:['oxygen','carbon dioxide','nitrogen','argon'],a:2},
       {q:'A substance that speeds up a chemical reaction without being used up is a:',o:['solvent','catalyst','reagent','solute'],a:1},
       {q:'The Moon causes tides on Earth because of:',o:['sunlight','gravitational pull','wind','magnetic force'],a:1},
@@ -420,64 +419,64 @@ const DATA = {
       {q:'The three primary colours of light are:',o:['red, yellow, blue','red, green, blue','red, yellow, green','orange, green, violet'],a:1},
       {q:'Which of these is a good conductor of electricity?',o:['glass','wood','copper wire','rubber'],a:2},
     ]},
-    m1:{id:'m1',title:'Mathematics ÔÇö Set A',desc:'40 questions ┬À Number & Operations',difficulty:'medium',subj:'Mathematics',qs:[
-      {q:'What is the value of 2┬│?',o:['6','8','9','12'],a:1},
+    m1:{id:'m1',title:'Mathematics — Set A',desc:'40 questions · Number & Operations',difficulty:'medium',subj:'Mathematics',qs:[
+      {q:'What is the value of 2³?',o:['6','8','9','12'],a:1},
       {q:'Which of the following is a prime number?',o:['4','6','9','7'],a:3},
       {q:'What is the LCM of 4 and 6?',o:['12','24','2','18'],a:0},
       {q:'Express 0.25 as a fraction in its simplest form.',o:['25/100','1/4','5/20','2/8'],a:1},
       {q:'What is 15% of 200?',o:['20','25','30','35'],a:2},
-      {q:'Simplify: 3 ├ù (4 + 2) ÔêÆ 5',o:['13','7','11','16'],a:0},
-      {q:'Which of the following is an integer?',o:['0.5','1/3','ÔêÜ2','-4'],a:3},
+      {q:'Simplify: 3 × (4 + 2) − 5',o:['13','7','11','16'],a:0},
+      {q:'Which of the following is an integer?',o:['0.5','1/3','√2','-4'],a:3},
       {q:'What is the GCF (HCF) of 12 and 18?',o:['3','4','6','9'],a:2},
       {q:'Express 45 minutes as a fraction of 1 hour in its simplest form.',o:['45/60','3/4','9/12','15/20'],a:1},
-      {q:'What is the value of ÔêÜ81?',o:['7','8','9','10'],a:2},
+      {q:'What is the value of √81?',o:['7','8','9','10'],a:2},
       {q:'What is 3/5 of 40?',o:['12','24','20','15'],a:1},
       {q:'Which of these numbers is divisible by both 3 and 4?',o:['10','14','24','20'],a:2},
       {q:'Round 4,756 to the nearest hundred.',o:['4,700','4,800','4,750','5,000'],a:1},
-      {q:'Evaluate: 5┬▓ + 3┬▓',o:['64','34','25','16'],a:1},
+      {q:'Evaluate: 5² + 3²',o:['64','34','25','16'],a:1},
       {q:'Find the value of x: x + 7 = 15',o:['x = 6','x = 7','x = 8','x = 22'],a:2},
-      {q:'Which of the following is NOT a rational number?',o:['0.5','ÔêÜ4','3/4','ÔêÜ3'],a:3},
+      {q:'Which of the following is NOT a rational number?',o:['0.5','√4','3/4','√3'],a:3},
       {q:'What is 20% of 350?',o:['50','60','70','80'],a:2},
       {q:'A ratio of boys to girls is 3:5. If there are 24 boys, how many girls are there?',o:['36','40','32','45'],a:1},
-      {q:'Solve: 2x ÔêÆ 4 = 10',o:['x = 3','x = 5','x = 7','x = 12'],a:2},
+      {q:'Solve: 2x − 4 = 10',o:['x = 3','x = 5','x = 7','x = 12'],a:2},
       {q:'Which of the following is a perfect square?',o:['12','15','25','30'],a:2},
       {q:'What is the product of 0.3 and 0.4?',o:['1.2','0.12','0.012','12'],a:1},
       {q:'Express 3/8 as a decimal.',o:['0.325','0.375','0.35','0.38'],a:1},
       {q:'What is the next number in the sequence: 2, 5, 10, 17, ___?',o:['24','25','26','28'],a:2},
-      {q:'Simplify: 6a + 3b ÔêÆ 2a + b',o:['4a + 4b','8a + 4b','4a + 2b','6a + 2b'],a:0},
-      {q:'Which angle is greater than 90┬░ but less than 180┬░?',o:['acute','right','obtuse','reflex'],a:2},
-      {q:'If a shirt costs GHÔéÁ 45 and is sold for GHÔéÁ 54, what is the percentage profit?',o:['15%','18%','20%','25%'],a:2},
+      {q:'Simplify: 6a + 3b − 2a + b',o:['4a + 4b','8a + 4b','4a + 2b','6a + 2b'],a:0},
+      {q:'Which angle is greater than 90° but less than 180°?',o:['acute','right','obtuse','reflex'],a:2},
+      {q:'If a shirt costs GH₵ 45 and is sold for GH₵ 54, what is the percentage profit?',o:['15%','18%','20%','25%'],a:2},
       {q:'What is the perimeter of a rectangle with length 8 cm and width 5 cm?',o:['13 cm','26 cm','40 cm','80 cm'],a:1},
-      {q:'Evaluate: 4/5 ├À 2/3',o:['8/15','5/6','6/5','2/3'],a:2},
-      {q:'The number 0.005 written in standard form is:',o:['5 ├ù 10Ôü╗┬▓','5 ├ù 10Ôü╗┬│','5 ├ù 10┬▓','5 ├ù 10┬│'],a:1},
-      {q:'What is the area of a square with side 7 cm?',o:['14 cm┬▓','28 cm┬▓','42 cm┬▓','49 cm┬▓'],a:3},
+      {q:'Evaluate: 4/5 ÷ 2/3',o:['8/15','5/6','6/5','2/3'],a:2},
+      {q:'The number 0.005 written in standard form is:',o:['5 × 10⁻²','5 × 10⁻³','5 × 10²','5 × 10³'],a:1},
+      {q:'What is the area of a square with side 7 cm?',o:['14 cm²','28 cm²','42 cm²','49 cm²'],a:3},
       {q:'How many lines of symmetry does a regular hexagon have?',o:['2','4','6','8'],a:2},
       {q:'Find the value of n: 3n = 27',o:['7','8','9','12'],a:2},
-      {q:'Kofi saves GHÔéÁ 12 each week. How much does he save in 8 weeks?',o:['GHÔéÁ 86','GHÔéÁ 96','GHÔéÁ 102','GHÔéÁ 84'],a:1},
+      {q:'Kofi saves GH₵ 12 each week. How much does he save in 8 weeks?',o:['GH₵ 86','GH₵ 96','GH₵ 102','GH₵ 84'],a:1},
       {q:'Convert 5 km to metres.',o:['500 m','5,000 m','50 m','5,500 m'],a:1},
       {q:'Factorise: 6x + 9',o:['3(2x + 3)','6(x + 9)','2(3x + 9)','9(x + 3)'],a:0},
       {q:'A class has 20 boys and 30 girls. What percentage are boys?',o:['20%','30%','40%','60%'],a:2},
-      {q:'What is the volume of a cuboid with length 4 cm, width 3 cm and height 2 cm?',o:['9 cm┬│','18 cm┬│','24 cm┬│','48 cm┬│'],a:2},
-      {q:'Which of the following is true about a straight angle?',o:['It is 90┬░','It is 45┬░','It is 180┬░','It is 360┬░'],a:2},
-      {q:'Simplify: (2┬│ ├ù 2┬▓)',o:['2ÔüÁ','4ÔüÂ','2ÔüÂ','4ÔüÁ'],a:0},
+      {q:'What is the volume of a cuboid with length 4 cm, width 3 cm and height 2 cm?',o:['9 cm³','18 cm³','24 cm³','48 cm³'],a:2},
+      {q:'Which of the following is true about a straight angle?',o:['It is 90°','It is 45°','It is 180°','It is 360°'],a:2},
+      {q:'Simplify: (2³ × 2²)',o:['2⁵','4⁶','2⁶','4⁵'],a:0},
       {q:'A map scale is 1:50,000. If two towns are 4 cm apart on the map, what is the actual distance?',o:['2 km','20 km','200 km','2,000 km'],a:1},
     ]},
-    m2:{id:'m2',title:'Mathematics ÔÇö Set B',desc:'40 questions ┬À Geometry & Statistics',difficulty:'hard',subj:'Mathematics',qs:[
-      {q:'The sum of the interior angles of a triangle is:',o:['90┬░','180┬░','270┬░','360┬░'],a:1},
+    m2:{id:'m2',title:'Mathematics — Set B',desc:'40 questions · Geometry & Statistics',difficulty:'hard',subj:'Mathematics',qs:[
+      {q:'The sum of the interior angles of a triangle is:',o:['90°','180°','270°','360°'],a:1},
       {q:'What type of triangle has all three sides equal?',o:['scalene','isosceles','equilateral','right-angled'],a:2},
-      {q:'Calculate the area of a circle with radius 7 cm. (Take ¤Ç = 22/7)',o:['154 cm┬▓','44 cm┬▓','22 cm┬▓','49 cm┬▓'],a:0},
+      {q:'Calculate the area of a circle with radius 7 cm. (Take π = 22/7)',o:['154 cm²','44 cm²','22 cm²','49 cm²'],a:0},
       {q:'A data set is: 5, 7, 8, 8, 10, 12. What is the mode?',o:['7','8','10','12'],a:1},
       {q:'Find the mean of: 10, 15, 20, 25, 30.',o:['18','20','22','25'],a:1},
       {q:'The median of: 3, 5, 7, 9, 11 is:',o:['5','7','9','11'],a:1},
       {q:'Which quadrilateral has only one pair of parallel sides?',o:['rectangle','rhombus','trapezium','square'],a:2},
-      {q:'A bearing of 090┬░ points towards:',o:['North','South','East','West'],a:2},
-      {q:'Find the circumference of a circle with diameter 14 cm. (Take ¤Ç = 22/7)',o:['44 cm','22 cm','88 cm','154 cm'],a:0},
+      {q:'A bearing of 090° points towards:',o:['North','South','East','West'],a:2},
+      {q:'Find the circumference of a circle with diameter 14 cm. (Take π = 22/7)',o:['44 cm','22 cm','88 cm','154 cm'],a:0},
       {q:'How many vertices does a cube have?',o:['4','6','8','12'],a:2},
       {q:'The probability of getting a head when a fair coin is tossed is:',o:['1/4','1/3','1/2','1'],a:2},
-      {q:'Expand: 3(2x ÔêÆ 5)',o:['6x ÔêÆ 15','6x + 15','6x ÔêÆ 5','3x ÔêÆ 15'],a:0},
-      {q:'Which of the following correctly describes a right angle?',o:['Less than 90┬░','Exactly 90┬░','Between 90┬░ and 180┬░','Exactly 180┬░'],a:1},
-      {q:'A pie chart represents data for 360┬░. If one sector is 90┬░, what fraction does it represent?',o:['1/2','1/3','1/4','1/5'],a:2},
-      {q:'Find x if the angles of a triangle are: 50┬░, 70┬░ and x.',o:['50┬░','60┬░','70┬░','80┬░'],a:1},
+      {q:'Expand: 3(2x − 5)',o:['6x − 15','6x + 15','6x − 5','3x − 15'],a:0},
+      {q:'Which of the following correctly describes a right angle?',o:['Less than 90°','Exactly 90°','Between 90° and 180°','Exactly 180°'],a:1},
+      {q:'A pie chart represents data for 360°. If one sector is 90°, what fraction does it represent?',o:['1/2','1/3','1/4','1/5'],a:2},
+      {q:'Find x if the angles of a triangle are: 50°, 70° and x.',o:['50°','60°','70°','80°'],a:1},
       {q:'What is the gradient of the line y = 3x + 2?',o:['2','3','5','6'],a:1},
       {q:'A rectangle has a perimeter of 36 cm and a length of 10 cm. What is its width?',o:['8 cm','6 cm','18 cm','26 cm'],a:1},
       {q:'Which of the following nets can be folded into a cube?',o:['Triangle with squares','Six equal squares','Four circles','Three rectangles'],a:1},
@@ -485,32 +484,32 @@ const DATA = {
       {q:'Solve: 2(x + 3) = 14',o:['x = 4','x = 7','x = 5','x = 6'],a:0},
       {q:'How many edges does a triangular prism have?',o:['6','9','12','15'],a:1},
       {q:'A bag contains 5 red and 3 blue balls. What is the probability of picking a blue ball?',o:['3/5','5/8','3/8','5/3'],a:2},
-      {q:'What is 25% of GHÔéÁ 480?',o:['GHÔéÁ 100','GHÔéÁ 120','GHÔéÁ 150','GHÔéÁ 200'],a:1},
+      {q:'What is 25% of GH₵ 480?',o:['GH₵ 100','GH₵ 120','GH₵ 150','GH₵ 200'],a:1},
       {q:'Find the value of y: 3y + 9 = 24',o:['y = 3','y = 4','y = 5','y = 6'],a:2},
-      {q:'Which of the following angles is a reflex angle?',o:['45┬░','90┬░','175┬░','270┬░'],a:3},
+      {q:'Which of the following angles is a reflex angle?',o:['45°','90°','175°','270°'],a:3},
       {q:'The range of the data: 4, 7, 2, 11, 6, 9 is:',o:['7','9','11','13'],a:1},
-      {q:'Translate the point A(2, 3) by the vector (ÔêÆ1, 4). What is the new position?',o:['(1,7)','(3,7)','(1,ÔêÆ1)','(3,ÔêÆ1)'],a:0},
-      {q:'Which transformation maps a shape onto itself?',o:['translation','reflection in a line of symmetry','rotation of 90┬░','enlargement'],a:1},
-      {q:'Simplify: (a┬▓)┬│',o:['aÔüÁ','aÔüÂ','aÔü©','2aÔüÂ'],a:1},
-      {q:'The exterior angle of a regular pentagon is:',o:['60┬░','72┬░','90┬░','108┬░'],a:1},
+      {q:'Translate the point A(2, 3) by the vector (−1, 4). What is the new position?',o:['(1,7)','(3,7)','(1,−1)','(3,−1)'],a:0},
+      {q:'Which transformation maps a shape onto itself?',o:['translation','reflection in a line of symmetry','rotation of 90°','enlargement'],a:1},
+      {q:'Simplify: (a²)³',o:['a⁵','a⁶','a⁸','2a⁶'],a:1},
+      {q:'The exterior angle of a regular pentagon is:',o:['60°','72°','90°','108°'],a:1},
       {q:'A cone has:',o:['two flat faces','one flat circular base and one curved face','three flat faces','no curved surface'],a:1},
-      {q:'On a number line, which integer is closest to ÔêÆ0.9?',o:['-2','-1','0','1'],a:1},
-      {q:'Express 36 as a product of prime factors.',o:['2 ├ù 18','2┬▓ ├ù 3┬▓','4 ├ù 9','6 ├ù 6'],a:1},
-      {q:'Find the interest on GHÔéÁ 500 at 10% per annum for 2 years.',o:['GHÔéÁ 50','GHÔéÁ 100','GHÔéÁ 150','GHÔéÁ 200'],a:1},
-      {q:'A sector of a circle with radius 7 cm has an angle of 90┬░. What is its area? (¤Ç = 22/7)',o:['38.5 cm┬▓','44 cm┬▓','154 cm┬▓','77 cm┬▓'],a:0},
-      {q:'Simplify: 4p ÔêÆ 2q + 3p + 5q',o:['7p + 3q','7p ÔêÆ 3q','p + 3q','p ÔêÆ 7q'],a:0},
-      {q:'If 5 pencils cost GHÔéÁ 2.50, how much do 8 pencils cost?',o:['GHÔéÁ 3.00','GHÔéÁ 3.50','GHÔéÁ 4.00','GHÔéÁ 5.00'],a:2},
-      {q:'The image of point (3, ÔêÆ2) after a reflection in the x-axis is:',o:['(3,2)',  '(-3,-2)','(-3,2)','(2,3)'],a:0},
+      {q:'On a number line, which integer is closest to −0.9?',o:['-2','-1','0','1'],a:1},
+      {q:'Express 36 as a product of prime factors.',o:['2 × 18','2² × 3²','4 × 9','6 × 6'],a:1},
+      {q:'Find the interest on GH₵ 500 at 10% per annum for 2 years.',o:['GH₵ 50','GH₵ 100','GH₵ 150','GH₵ 200'],a:1},
+      {q:'A sector of a circle with radius 7 cm has an angle of 90°. What is its area? (π = 22/7)',o:['38.5 cm²','44 cm²','154 cm²','77 cm²'],a:0},
+      {q:'Simplify: 4p − 2q + 3p + 5q',o:['7p + 3q','7p − 3q','p + 3q','p − 7q'],a:0},
+      {q:'If 5 pencils cost GH₵ 2.50, how much do 8 pencils cost?',o:['GH₵ 3.00','GH₵ 3.50','GH₵ 4.00','GH₵ 5.00'],a:2},
+      {q:'The image of point (3, −2) after a reflection in the x-axis is:',o:['(3,2)','(-3,-2)','(-3,2)','(2,3)'],a:0},
       {q:'In a bar chart, the height of a bar represents:',o:['the title of the data','the frequency or value','the colour of data','the order of data'],a:1},
       {q:'How many faces does a rectangular prism (cuboid) have?',o:['4','6','8','12'],a:1},
     ]},
-    so1:{id:'so1',title:'Social Studies ÔÇö Set A',desc:'40 questions ┬À Ghana & Our Society',difficulty:'medium',subj:'Social Studies',qs:[
+    so1:{id:'so1',title:'Social Studies — Set A',desc:'40 questions · Ghana & Our Society',difficulty:'medium',subj:'Social Studies',qs:[
       {q:'Ghana is located in which region of Africa?',o:['East Africa','North Africa','West Africa','Southern Africa'],a:2},
       {q:'The capital city of Ghana is:',o:['Kumasi','Tamale','Cape Coast','Accra'],a:3},
       {q:'Ghana gained independence from British colonial rule in:',o:['1954','1956','1957','1960'],a:2},
       {q:'The person who led Ghana to independence was:',o:['J.B. Danquah','Kofi Abrefa Busia','Kwame Nkrumah','J.J. Rawlings'],a:2},
       {q:'What is the main physical feature that separates the northern and southern parts of Ghana?',o:['Lake Volta','River Pra','The Akwapim-Togo Ranges','River Volta'],a:2},
-      {q:'Ghana is bordered to the west by:',o:['Togo','Benin','C├┤te d\'Ivoire','Burkina Faso'],a:2},
+      {q:'Ghana is bordered to the west by:',o:['Togo','Benin','Côte d\'Ivoire','Burkina Faso'],a:2},
       {q:'The largest man-made lake in Ghana is:',o:['Lake Bosomtwe','Lake Volta','Lake Chad','Lake Akan'],a:1},
       {q:'Which of the following is a cash crop grown in Ghana?',o:['rice','maize','cocoa','cassava'],a:2},
       {q:'Ghana is divided into how many regions as of 2019?',o:['10','12','14','16'],a:3},
@@ -526,7 +525,7 @@ const DATA = {
       {q:'Deforestation leads to which of the following problems?',o:['Increased rainfall','Loss of biodiversity and soil erosion','Improved air quality','More farming land forever'],a:1},
       {q:'The most common type of agriculture in Ghana is:',o:['commercial farming','subsistence farming','plantation farming','mechanised farming'],a:1},
       {q:'Which national institution in Ghana is responsible for maintaining law and order?',o:['Ghana Education Service','Ghana Police Service','Ghana Health Service','Electoral Commission'],a:1},
-      {q:'The Volta Region of Ghana borders which country to the east?',o:['C├┤te d\'Ivoire','Burkina Faso','Togo','Benin'],a:2},
+      {q:'The Volta Region of Ghana borders which country to the east?',o:['Côte d\'Ivoire','Burkina Faso','Togo','Benin'],a:2},
       {q:'Which of the following is a natural resource of Ghana?',o:['motor vehicles','imported textiles','gold','computers'],a:2},
       {q:'Which Ghanaian institution conducts free and fair elections?',o:['Parliament','Electoral Commission','Police Service','Judiciary'],a:1},
       {q:'A map drawn at a scale of 1:100,000 means that 1 cm on the map equals ___ cm on the ground.',o:['100','1,000','10,000','100,000'],a:3},
@@ -535,7 +534,7 @@ const DATA = {
       {q:'Climate in Ghana is largely influenced by which wind?',o:['Harmattan','Khamsin','Trade wind','Monsoon'],a:0},
       {q:'The national symbols of Ghana include all the following EXCEPT:',o:['the national flag','the national coat of arms','the cedi note','the national anthem'],a:2},
       {q:'What does "sustainable development" mean?',o:['Developing a country quickly','Meeting present needs without compromising future generations','Only developing cities','Using all natural resources now'],a:1},
-      {q:'Which of the following is an example of a non-formal education in Ghana?',o:['Primary school','Senior High School','Apprenticeship training','University'],a:2},
+      {q:'Which of the following is an example of non-formal education in Ghana?',o:['Primary school','Senior High School','Apprenticeship training','University'],a:2},
       {q:'Traditional marriage in Ghana involves:',o:['only the bride and groom','the extended family and the payment of bride price','only church blessings','only a civil contract'],a:1},
       {q:'Which of these is an effect of child labour?',o:['Better academic performance','Deprivation of education and exploitation','Financial independence of children','Strong children'],a:1},
       {q:'Ghana\'s economy is said to be "mixed" because:',o:['it mixes agriculture and industry only','both government and private sector own businesses','only the government runs businesses','all citizens are traders'],a:1},
@@ -546,7 +545,7 @@ const DATA = {
       {q:'Which of the following factors promotes national unity in Ghana?',o:['Ethnic discrimination','Respect for diversity and shared values','Corruption','Favouritism'],a:1},
       {q:'The three organs of government in Ghana are the Executive, Judiciary and:',o:['Police Service','Electoral Commission','Parliament/Legislature','Armed Forces'],a:2},
     ]},
-    so2:{id:'so2',title:'Social Studies ÔÇö Set B',desc:'40 questions ┬À Population, Resources & Culture',difficulty:'medium',subj:'Social Studies',qs:[
+    so2:{id:'so2',title:'Social Studies — Set B',desc:'40 questions · Population, Resources & Culture',difficulty:'medium',subj:'Social Studies',qs:[
       {q:'Population density refers to:',o:['the total population of a country','the number of people per unit area','how fast a population grows','the average age of people'],a:1},
       {q:'Which of the following is a major cause of population growth in Ghana?',o:['High death rates','Low birth rates','High birth rates and falling death rates','Large-scale emigration'],a:2},
       {q:'The term "extended family" in Ghana refers to:',o:['parents and children only','parents, children and all close relatives','only grandparents','a family with many children'],a:1},
@@ -588,7 +587,7 @@ const DATA = {
       {q:'The safe disposal of waste protects the community from:',o:['good health','disease and environmental pollution','poverty','lack of food'],a:1},
       {q:'The role of the media (radio, TV, newspapers) in a democracy is to:',o:['entertain only','inform, educate and hold leaders accountable','spread government propaganda','support only the ruling party'],a:1},
     ]},
-    c1:{id:'c1',title:'Computing ÔÇö Set A',desc:'40 questions ┬À ICT Fundamentals & Hardware',difficulty:'easy',subj:'Computing',qs:[
+    c1:{id:'c1',title:'Computing — Set A',desc:'40 questions · ICT Fundamentals & Hardware',difficulty:'easy',subj:'Computing',qs:[
       {q:'ICT stands for:',o:['International Computer Technology','Information and Communication Technology','Integrated Computer Transmission','Interactive Communication Tools'],a:1},
       {q:'Which of the following is an input device?',o:['monitor','printer','keyboard','speaker'],a:2},
       {q:'Which of the following is an output device?',o:['mouse','keyboard','scanner','printer'],a:3},
@@ -630,7 +629,7 @@ const DATA = {
       {q:'The term "file" in computing refers to:',o:['a physical folder','a collection of data stored under a name','the Internet connection','the screen resolution'],a:1},
       {q:'Which of the following statements about computers is TRUE?',o:['Computers can think on their own','Computers only work with instructions given by humans','Computers never make errors','Computers do not need electricity'],a:1},
     ]},
-    c2:{id:'c2',title:'Computing ÔÇö Set B',desc:'40 questions ┬À Word Processing & Software',difficulty:'medium',subj:'Computing',qs:[
+    c2:{id:'c2',title:'Computing — Set B',desc:'40 questions · Word Processing & Software',difficulty:'medium',subj:'Computing',qs:[
       {q:'Word processing software is used to:',o:['manage spreadsheets','create and edit text documents','design databases','browse the internet'],a:1},
       {q:'Which of the following is a word processing software?',o:['Microsoft Excel','Microsoft PowerPoint','Microsoft Word','Microsoft Access'],a:2},
       {q:'To start a new paragraph in Microsoft Word, you press the ___ key.',o:['Tab','Shift','Enter','Caps Lock'],a:2},
@@ -658,7 +657,7 @@ const DATA = {
       {q:'Which of these is an example of application software?',o:['Windows 10','BIOS','Microsoft Word','Device driver'],a:2},
       {q:'What is the purpose of the "Tab" key in word processing?',o:['Delete a word','Create an indent or move to the next field','Print the page','Open a new document'],a:1},
       {q:'To change the size of the text in a Word document, you adjust the:',o:['line spacing','font size','page margin','paragraph spacing'],a:1},
-      {q:'Which of the following is a good practice when using computers?',o:['Eating and drinking near the keyboard','Turning off the computer using the power button properly','Leaving the computer on all night','Downloading files from unknown websites'],a:1},
+      {q:'Which of the following is a good practice when using computers?',o:['Eating and drinking near the keyboard','Turning off the computer properly','Leaving the computer on all night','Downloading files from unknown websites'],a:1},
       {q:'Data in a computer is measured in units. Which is the LARGEST unit?',o:['Megabyte','Kilobyte','Terabyte','Gigabyte'],a:2},
       {q:'"Copy and Paste" in Word means:',o:['Moving text from one place to another','Duplicating text from one place and placing it in another','Deleting and retyping text','Printing the document twice'],a:1},
       {q:'Which menu in Word contains the option to insert images?',o:['Home','File','Insert','View'],a:2},
@@ -684,7 +683,7 @@ function init(){
       <div class="subj-icon">${s.icon}</div>
       <h3>${s.name}</h3>
       <p>${s.desc}</p>
-      <span class="quiz-count-badge">${s.quizzes.length} quizzes ┬À 40 Qs each</span>
+      <span class="quiz-count-badge">${s.quizzes.length} quizzes · 40 Qs each</span>
     </div>`).join('');
 }
 
@@ -692,12 +691,12 @@ function selectSubject(id){
   state.subject=DATA.subjects.find(s=>s.id===id);
   const qids=state.subject.quizzes;
   document.getElementById('ql-heading').textContent=state.subject.name;
-  document.getElementById('ql-sub').textContent=`NaCCA B7 Syllabus ┬À ${state.subject.icon} BECE-Style Objective Questions`;
+  document.getElementById('ql-sub').textContent=`BECE-Style Objective Questions · ${state.subject.icon}`;
   document.getElementById('quiz-list').innerHTML=qids.map(qid=>{
     const q=DATA.quizzes[qid];
     return `<div class="quiz-item" onclick="startQuiz('${qid}')">
       <div class="qi-info"><h4>${q.title}</h4><p>${q.desc}</p></div>
-      <div style="display:flex;align-items:center;gap:8px"><span class="badge badge-${q.difficulty}">${q.difficulty}</span><span class="arrow-ic">ÔÇ║</span></div>
+      <div style="display:flex;align-items:center;gap:8px"><span class="badge badge-${q.difficulty}">${q.difficulty}</span><span class="arrow-ic">›</span></div>
     </div>`;
   }).join('');
   showScreen('quizlist');
@@ -743,8 +742,8 @@ function selectAns(idx){
     if(i===idx&&idx!==q.a)btn.classList.add('wrong');
   });
   const fb=document.getElementById('feedback-msg');
-  if(idx===q.a){state.score++;document.getElementById('live-score').textContent=state.score;fb.textContent='Ô£ô Correct!';fb.className='fb correct';}
-  else{fb.textContent=`Ô£ù Wrong! Correct answer: ${['A','B','C','D'][q.a]}`;fb.className='fb wrong';}
+  if(idx===q.a){state.score++;document.getElementById('live-score').textContent=state.score;fb.textContent='✓ Correct!';fb.className='fb correct';}
+  else{fb.textContent=`✗ Wrong! Correct answer: ${['A','B','C','D'][q.a]}`;fb.className='fb wrong';}
   fb.style.display='inline-flex';
   document.getElementById('next-btn').disabled=false;
 }
@@ -776,7 +775,7 @@ function timeOut(){
   const q=state.questions[state.currentQ];
   document.querySelectorAll('.option-btn').forEach((btn,i)=>{btn.disabled=true;if(i===q.a)btn.classList.add('correct');});
   const fb=document.getElementById('feedback-msg');
-  fb.textContent=`ÔÅ░ Time up! Correct: ${['A','B','C','D'][q.a]}`;fb.className='fb timeout';fb.style.display='inline-flex';
+  fb.textContent=`⏰ Time up! Correct: ${['A','B','C','D'][q.a]}`;fb.className='fb timeout';fb.style.display='inline-flex';
   document.getElementById('next-btn').disabled=false;
 }
 
@@ -792,10 +791,10 @@ function showResults(){
   document.getElementById('stat-skip').textContent=skip;
   document.getElementById('result-pct').textContent=pct+'%';
   let title,sub;
-  if(pct>=80){title='­ƒÅå Excellent!';sub='Outstanding performance! You are well prepared for BECE.';}
-  else if(pct>=60){title='­ƒÄë Good Work!';sub='Good effort. Keep revising your B7 notes.';}
-  else if(pct>=40){title='­ƒôû Keep Studying!';sub='Review your answers below and try again.';}
-  else{title='­ƒÆ¬ Try Again!';sub='Study your B7 syllabus carefully and retry.';}
+  if(pct>=80){title='🏆 Excellent!';sub='Outstanding performance! You are well prepared for BECE.';}
+  else if(pct>=60){title='🎉 Good Work!';sub='Good effort. Keep revising your notes.';}
+  else if(pct>=40){title='📖 Keep Studying!';sub='Review your answers below and try again.';}
+  else{title='💪 Try Again!';sub='Study the syllabus carefully and retry.';}
   document.getElementById('result-title').textContent=title;
   document.getElementById('result-sub').textContent=sub;
   const col=pct>=70?'#0a7c4b':pct>=50?'#f59e0b':'#dc2626';
@@ -813,7 +812,7 @@ function toggleReview(){
   document.getElementById('review-list').innerHTML=state.questions.map((q,i)=>{
     const ua=state.answers[i];const isC=ua===q.a;const isS=ua===-1;
     const cls=isC?'cq':isS?'sq':'wq';
-    const badge=isC?'<span class="rev-badge rb-c">Ô£ô Correct</span>':isS?'<span class="rev-badge rb-s">ÔÅ░ Timed Out</span>':'<span class="rev-badge rb-w">Ô£ù Wrong</span>';
+    const badge=isC?'<span class="rev-badge rb-c">✓ Correct</span>':isS?'<span class="rev-badge rb-s">⏰ Timed Out</span>':'<span class="rev-badge rb-w">✗ Wrong</span>';
     let ans=`<div class="rev-ans">Correct answer: <span class="ca">${L[q.a]}. ${q.o[q.a]}</span>`;
     if(!isC&&!isS)ans+=` &nbsp;|&nbsp; Your answer: <span class="wa">${L[ua]}. ${q.o[ua]}</span>`;
     ans+='</div>';

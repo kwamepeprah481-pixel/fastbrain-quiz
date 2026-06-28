@@ -32,6 +32,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
 .subject-card.comp::after{background:linear-gradient(90deg,#dc2626,#f43f5e);}
 
 
+.subj-icon{font-size:32px;margin-bottom:8px;}
 .subject-card h3{font-family:'Schibsted Grotesk',sans-serif;font-weight:600;font-size:16px;margin-bottom:4px;letter-spacing:-.2px;}
 .subject-card p{font-size:12px;color:var(--muted);line-height:1.4;}
 .quiz-count-badge{display:inline-block;margin-top:10px;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:44px;padding:3px 12px;color:var(--muted);font-weight:500;}
@@ -414,6 +415,7 @@ async function showSubjects() {
     const subjects = await api('/subjects');
     grid.innerHTML = subjects.map(s => `
       <div class="subject-card ${s.color_class || ''}" onclick="selectSubject('${s.id}')">
+        ${s.icon ? `<div class="subj-icon">${s.icon}</div>` : ''}
         <h3>${s.name}</h3>
         <p>${s.description || ''}</p>
         <span class="quiz-count-badge">${s.quizzes ? s.quizzes.length : 0} quizzes · 40 Qs each</span>

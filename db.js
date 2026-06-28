@@ -141,9 +141,18 @@ function trySeed(db) {
   db.run('DELETE FROM quizzes');
   db.run('DELETE FROM subjects');
   for (const s of DATA.subjects) {
-    db.run('INSERT INTO subjects (id, name, icon, description, color_class) VALUES (?, ?, ?, ?, ?)', [s.id, s.name, '', s.desc, s.cls]);
+    db.run('INSERT INTO subjects (id, name, icon, description, color_class) VALUES (?, ?, ?, ?, ?)', [s.id, s.name, s.icon || '', s.desc, s.cls]);
   }
-  // Quizzes not auto-created; use admin panel to upload
+  for (const [qid, quiz] of Object.entries(DATA.quizzes)) {
+    const subj = DATA.subjects.find(s => s.quizzes.includes(qid));
+    db.run('INSERT INTO quizzes (id, subject_id, title, description, difficulty, created_by) VALUES (?, ?, ?, ?, ?, ?)', [qid, subj ? subj.id : 'eng', quiz.title, quiz.desc, quiz.difficulty, 1]);
+    if (quiz.qs) {
+      for (let i = 0; i < quiz.qs.length; i++) {
+        const q = quiz.qs[i];
+        db.run('INSERT INTO questions (quiz_id, question_text, options, answer, question_order) VALUES (?, ?, ?, ?, ?)', [qid, q.q, JSON.stringify(q.o), q.a, i]);
+      }
+    }
+  }
   saveDb(db);
   const cnt = db.exec('SELECT COUNT(*) as c FROM subjects')[0].values[0][0];
   console.log('Database auto-seeded:', cnt, 'subjects');
