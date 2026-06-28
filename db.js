@@ -7,20 +7,25 @@ const DB_PATH = path.join(__dirname, 'quizmaster.db');
 const HTML_PATH = path.join(__dirname, 'ghana_b7_bece_quiz.html');
 
 let db = null;
+let initPromise = null;
 
 async function getDb() {
   if (db) return db;
-  const SQL = await initSqlJs();
-  if (fs.existsSync(DB_PATH)) {
-    const buf = fs.readFileSync(DB_PATH);
-    db = new SQL.Database(buf);
-  } else {
-    db = new SQL.Database();
-  }
-  enableWAL(db);
-  createTables(db);
-  try { trySeed(db); } catch (e) { console.error('Seed error:', e.message); }
-  return db;
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    const SQL = await initSqlJs();
+    if (fs.existsSync(DB_PATH)) {
+      const buf = fs.readFileSync(DB_PATH);
+      db = new SQL.Database(buf);
+    } else {
+      db = new SQL.Database();
+    }
+    enableWAL(db);
+    createTables(db);
+    try { trySeed(db); } catch (e) { console.error('Seed error:', e.message); }
+    return db;
+  })();
+  try { return await initPromise; } finally { initPromise = null; }
 }
 
 function enableWAL(db) {

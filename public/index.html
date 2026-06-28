@@ -532,6 +532,10 @@ async function startQuiz(quizId, resume = false) {
 
 function renderQ() {
   clearTimer();
+  if (!state.questions || state.questions.length === 0 || !state.questions[state.currentQ]) {
+    document.getElementById('q-text').textContent = 'Failed to load questions. Please go back and try again.';
+    return;
+  }
   const q = state.questions[state.currentQ];
   const tot = state.questions.length;
   const idx = state.currentQ;
