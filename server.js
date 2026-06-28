@@ -30,6 +30,20 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`QuizMaster server running at http://localhost:${PORT}`);
+  try {
+    const admin = await db.get('SELECT id FROM users WHERE email = ?', ['admin@quizmaster.com']);
+    if (!admin) {
+      const bcrypt = require('bcryptjs');
+      const hash = bcrypt.hashSync('admin123', 10);
+      await db.run('INSERT INTO users (email, username, password, role) VALUES (?, ?, ?, ?)',
+        ['admin@quizmaster.com', 'admin', hash, 'admin']);
+      console.log('Admin user created');
+    } else {
+      console.log('Admin user exists');
+    }
+  } catch (e) {
+    console.error('Admin check error:', e.message);
+  }
 });
