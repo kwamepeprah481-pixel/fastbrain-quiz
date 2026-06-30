@@ -180,15 +180,13 @@ router.put('/quizzes/:id', async (req, res) => {
 
 router.delete('/quizzes/:id', async (req, res) => {
   try {
-    const d = await db.getDb();
-    d.run('DELETE FROM questions WHERE quiz_id = ?', [req.params.id]);
-    d.run('DELETE FROM quiz_attempts WHERE quiz_id = ?', [req.params.id]);
-    d.run('DELETE FROM quizzes WHERE id = ?', [req.params.id]);
-    if (d.getRowsModified() === 0) {
+    await db.run('DELETE FROM questions WHERE quiz_id = ?', [req.params.id]);
+    await db.run('DELETE FROM quiz_attempts WHERE quiz_id = ?', [req.params.id]);
+    const result = await db.run('DELETE FROM quizzes WHERE id = ?', [req.params.id]);
+    if (result.changes === 0) {
       return res.status(404).json({ error: 'Quiz not found' });
     }
     await logAction(req.user.id, 'delete_quiz', { id: req.params.id });
-    // persist happens inside the next db.run call (logAction)
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });

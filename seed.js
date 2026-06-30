@@ -1,12 +1,58 @@
 const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
-const initSqlJs = require('sql.js');
 
 const DB_PATH = path.join(__dirname, 'quizmaster.db');
 const HTML_PATH = path.join(__dirname, 'ghana_b7_bece_quiz.html');
 
+function isPostgres() {
+  return !!process.env.DATABASE_URL;
+}
+
 async function seed() {
+  const DATA = extractData();
+  if (!DATA) return;
+
+  if (isPostgres()) {
+    await seedPostgres(DATA);
+  } else {
+    await seedSQLite(DATA);
+  }
+}
+
+function extractData() {
+  if (!fs.existsSync(HTML_PATH)) {
+    console.error('Seed file not found:', HTML_PATH);
+    return null;
+  }
+  let buf = fs.readFileSync(HTML_PATH);
+  let html;
+  if (buf[0] === 0xFF && buf[1] === 0xFE) {
+    html = buf.toString('utf16le');
+  } else {
+    html = buf.toString('utf-8');
+  }
+  const startIdx = html.indexOf('const DATA = {');
+  if (startIdx === -1) {
+    console.error('Could not find DATA in HTML file');
+    return null;
+  }
+  let depth = 0, endIdx = startIdx + 13;
+  for (let i = startIdx + 14; i < html.length; i++) {
+    if (html[i] === '{') depth++;
+    else if (html[i] === '}') { depth--; if (depth < 0) { endIdx = i + 1; break; } }
+  }
+  const dataStr = html.substring(startIdx + 13, endIdx);
+  try {
+    return eval('(' + dataStr + ')');
+  } catch (e) {
+    console.error('Failed to parse DATA:', e.message);
+    return null;
+  }
+}
+
+async function seedSQLite(DATA) {
+  const initSqlJs = require('sql.js');
   const SQL = await initSqlJs();
   let db;
   if (fs.existsSync(DB_PATH)) {
@@ -18,12 +64,9 @@ async function seed() {
 
   db.run('PRAGMA journal_mode=WAL;');
   db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT UNIQUE NOT NULL,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    role TEXT DEFAULT 'user',
-    created_at TEXT DEFAULT (datetime('now'))
+    id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL, password TEXT NOT NULL,
+    role TEXT DEFAULT 'user', created_at TEXT DEFAULT (datetime('now'))
   )`);
   db.run(`CREATE TABLE IF NOT EXISTS subjects (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, icon TEXT, description TEXT, color_class TEXT
@@ -49,26 +92,6 @@ async function seed() {
     action TEXT NOT NULL, details TEXT, created_at TEXT DEFAULT (datetime('now'))
   )`);
 
-  let buf = fs.readFileSync(HTML_PATH);
-  let html;
-  if (buf[0] === 0xFF && buf[1] === 0xFE) {
-    html = buf.toString('utf16le');
-  } else {
-    html = buf.toString('utf-8');
-  }
-  const startIdx = html.indexOf('const DATA = {');
-  if (startIdx === -1) {
-    console.error('Could not find DATA in HTML file');
-    return;
-  }
-  let depth = 0, endIdx = startIdx + 13;
-  for (let i = startIdx + 14; i < html.length; i++) {
-    if (html[i] === '{') depth++;
-    else if (html[i] === '}') { depth--; if (depth < 0) { endIdx = i + 1; break; } }
-  }
-  const dataStr = html.substring(startIdx + 13, endIdx);
-  const DATA = eval('(' + dataStr + ')');
-
   db.run('DELETE FROM questions');
   db.run('DELETE FROM quizzes');
   db.run('DELETE FROM subjects');
@@ -77,7 +100,6 @@ async function seed() {
     db.run('INSERT INTO subjects (id, name, icon, description, color_class) VALUES (?, ?, ?, ?, ?)',
       [s.id, s.name, s.icon, s.desc, s.cls]);
   }
-
   for (const [qid, quiz] of Object.entries(DATA.quizzes)) {
     const subj = DATA.subjects.find(s => s.quizzes.includes(qid));
     db.run('INSERT INTO quizzes (id, subject_id, title, description, difficulty, created_by) VALUES (?, ?, ?, ?, ?, ?)',
@@ -100,10 +122,91 @@ async function seed() {
 
   const data = db.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
+  logSummary(db);
+}
+
+async function seedPostgres(DATA) {
+  const { Pool } = require('pg');
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  });
+
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY, email TEXT UNIQUE NOT NULL,
+        username TEXT UNIQUE NOT NULL, password TEXT NOT NULL,
+        role TEXT DEFAULT 'user', created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS subjects (
+        id TEXT PRIMARY KEY, name TEXT NOT NULL, icon TEXT, description TEXT, color_class TEXT
+      );
+      CREATE TABLE IF NOT EXISTS quizzes (
+        id TEXT PRIMARY KEY, subject_id TEXT NOT NULL, title TEXT NOT NULL, description TEXT,
+        difficulty TEXT DEFAULT 'medium', created_by INTEGER, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (subject_id) REFERENCES subjects(id)
+      );
+      CREATE TABLE IF NOT EXISTS questions (
+        id SERIAL PRIMARY KEY, quiz_id TEXT NOT NULL, question_text TEXT NOT NULL,
+        options TEXT NOT NULL, answer INTEGER NOT NULL, question_order INTEGER NOT NULL,
+        FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
+      );
+      CREATE TABLE IF NOT EXISTS quiz_attempts (
+        id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL, quiz_id TEXT NOT NULL,
+        score INTEGER NOT NULL, total INTEGER NOT NULL, answers TEXT,
+        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+      CREATE TABLE IF NOT EXISTS admin_logs (
+        id SERIAL PRIMARY KEY, admin_id INTEGER NOT NULL,
+        action TEXT NOT NULL, details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await client.query('DELETE FROM questions');
+    await client.query('DELETE FROM quizzes');
+    await client.query('DELETE FROM subjects');
+
+    for (const s of DATA.subjects) {
+      await client.query('INSERT INTO subjects (id, name, icon, description, color_class) VALUES ($1, $2, $3, $4, $5)',
+        [s.id, s.name, s.icon, s.desc, s.cls]);
+    }
+    for (const [qid, quiz] of Object.entries(DATA.quizzes)) {
+      const subj = DATA.subjects.find(s => s.quizzes.includes(qid));
+      await client.query('INSERT INTO quizzes (id, subject_id, title, description, difficulty, created_by) VALUES ($1, $2, $3, $4, $5, $6)',
+        [qid, subj ? subj.id : 'eng', quiz.title, quiz.desc, quiz.difficulty, 1]);
+      if (quiz.qs) {
+        for (let i = 0; i < quiz.qs.length; i++) {
+          const q = quiz.qs[i];
+          await client.query('INSERT INTO questions (quiz_id, question_text, options, answer, question_order) VALUES ($1, $2, $3, $4, $5)',
+            [qid, q.q, JSON.stringify(q.o), q.a, i]);
+        }
+      }
+    }
+
+    const admin = await client.query('SELECT id FROM users WHERE email = $1', ['admin@quizmaster.com']);
+    if (admin.rows.length === 0) {
+      const hash = await bcrypt.hash('admin123', 10);
+      await client.query('INSERT INTO users (email, username, password, role) VALUES ($1, $2, $3, $4)',
+        ['admin@quizmaster.com', 'admin', hash, 'admin']);
+    }
+
+    const cnt = await client.query('SELECT COUNT(*) as c FROM subjects');
+    console.log('Database seeded (PostgreSQL):', cnt.rows[0].c, 'subjects');
+    console.log('Admin login: admin@quizmaster.com / admin123');
+  } finally {
+    client.release();
+  }
+  await pool.end();
+}
+
+function logSummary(db) {
+  const cnt = db.exec('SELECT COUNT(*) as c FROM subjects')[0].values[0][0];
   console.log('Database seeded successfully!');
   console.log('Admin login: admin@quizmaster.com / admin123');
-  console.log('Subjects:', DATA.subjects.length);
-  console.log('Quizzes:', Object.keys(DATA.quizzes).length);
+  console.log('Subjects:', cnt);
   const qCount = db.exec('SELECT COUNT(*) as c FROM questions')[0].values[0][0];
   console.log('Questions:', qCount);
 }

@@ -44,6 +44,7 @@ app.use((err, req, res, _next) => {
 app.listen(PORT, async () => {
   console.log(`QuizMaster server running at http://localhost:${PORT}`);
   try {
+    await db.initialize();
     const admin = await db.get('SELECT id FROM users WHERE email = ?', ['admin@quizmaster.com']);
     if (!admin) {
       const bcrypt = require('bcryptjs');
