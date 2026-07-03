@@ -1,30 +1,29 @@
 {
   "project": "JHS QuizMaster B7",
-  "last_session": "2026-06-26",
-  "status": "save_fixed_and_autogen_added",
+  "last_session": "2026-07-01",
+  "status": "postgres_migrated_and_progress_tab_added",
   "files_read": [
     "server.js", "db.js", "middleware.js", "package.json", "seed.js",
     "routes/auth.js", "routes/quizzes.js", "routes/admin.js", "routes/materials.js",
     "public/index.html", "public/admin.html"
   ],
-  "files_modified": [
-    "server.js", "db.js", "public/admin.html", "routes/materials.js"
-  ],
-  "files_created": [
-    "routes/materials.js", ".opencode-state.json"
-  ],
-  "dependencies_added": ["mammoth", "pdf-parse"],
+  "dependencies_added": ["mammoth", "pdf-parse", "pg"],
   "bugs_fixed": [
     "editQuestion Done button: removed broken 'qe-editor' id reference that caused silent TypeError; added doneEditing() function + oninput handlers for real-time data binding",
     "saveQuiz: added oninput alongside onchange so edits are captured even without blur",
-    "material_id: was hardcoded to 1; now tracked via lastMaterialId variable"
+    "material_id: was hardcoded to 1; now tracked via lastMaterialId variable",
+    "User accounts lost on free Render tier due to SQLite ephemeral storage: migrated to PostgreSQL with auto-detection via DATABASE_URL",
+    "Duplicate require('pg') caused SyntaxError on deploy"
   ],
   "features_added": [
     "Materials tab in admin panel with upload/parse/review/generate flow",
     "Auto-Generate Everything: one-click upload → auto-create subject + quiz + questions from .docx/.pdf",
     "MCQ detection from structured text (question + A/B/C/D + answer pattern)",
-    "Fill-in-the-blank auto-generation from content keywords"
+    "Fill-in-the-blank auto-generation from content keywords",
+    "PostgreSQL support with SQLite fallback for local dev",
+    "Auto-provisioned PostgreSQL database on Render via render.yaml",
+    "Admin Progress tab showing each user's completed quizzes with individual scores and percentages"
   ],
   "pending_changes": [],
-  "notes": "Server on port 3000. Admin: admin@quizmaster.com / admin123. Access admin panel at /admin.html"
+  "notes": "Server on port 3000. Admin: admin@quizmaster.com / admin123. PostgreSQL live on Render. Data persists across restarts."
 }

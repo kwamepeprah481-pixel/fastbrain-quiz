@@ -206,6 +206,26 @@ router.get('/logs', async (req, res) => {
   }
 });
 
+router.get('/progress', async (req, res) => {
+  try {
+    const attempts = await db.all(
+      `SELECT qa.id, qa.user_id, qa.quiz_id, qa.score, qa.total, qa.completed_at,
+              u.email, u.username,
+              q.title as quiz_title, q.difficulty,
+              s.name as subject_name, s.id as subject_id
+       FROM quiz_attempts qa
+       JOIN users u ON qa.user_id = u.id
+       JOIN quizzes q ON qa.quiz_id = q.id
+       JOIN subjects s ON q.subject_id = s.id
+       WHERE qa.status = ?
+       ORDER BY qa.completed_at DESC`
+    , ['completed']);
+    res.json(attempts);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.post('/import-bulk', async (req, res) => {
   try {
     const { data } = req.body;

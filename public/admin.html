@@ -85,6 +85,7 @@ tr:hover td{background:var(--accent-bg);}
     <button class="tab" onclick="switchTab('users')">👥 Users</button>
     <button class="tab" onclick="switchTab('materials')">📄 Materials</button>
     <button class="tab" onclick="switchTab('import')">📥 Import</button>
+    <button class="tab" onclick="switchTab('progress')">📊 Progress</button>
     <button class="tab" onclick="switchTab('logs')">📋 Logs</button>
     <button class="tab" onclick="window.open('/','_blank')">🏠 Home</button>
   </div>
@@ -231,6 +232,14 @@ tr:hover td{background:var(--accent-bg);}
       <div id="logs-list">Loading...</div>
     </div>
   </div>
+
+  <div class="panel" id="panel-progress">
+    <div class="card">
+      <h3>User Quiz Progress</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Completed quiz attempts with scores across all users.</p>
+      <div id="progress-list">Loading...</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -281,6 +290,7 @@ function switchTab(name) {
   if (name === 'users') loadUsers();
   if (name === 'materials') { loadSubjectsDropdown(); loadMaterials(); }
   if (name === 'logs') loadLogs();
+  if (name === 'progress') loadProgress();
 }
 
 async function loadSubjects() {
@@ -492,6 +502,18 @@ async function deleteUser(id) {
     setMsg('User deleted', 'ok');
     loadUsers();
   } catch (e) { setMsg(e.message, 'err'); }
+}
+
+async function loadProgress() {
+  try {
+    const attempts = await api('/admin/progress');
+    document.getElementById('progress-list').innerHTML = attempts.length === 0 ? '<p style="color:var(--muted)">No completed quiz attempts yet.</p>' :
+      `<div class="table-wrap"><table><tr><th>User</th><th>Email</th><th>Quiz</th><th>Subject</th><th>Difficulty</th><th>Score</th><th>Total</th><th>%</th><th>Date</th></tr>${attempts.map(a => {
+        const pct = a.total > 0 ? Math.round(a.score / a.total * 100) : 0;
+        const pctClass = pct >= 70 ? 'status admin' : pct >= 40 ? 'status' : 'status user';
+        return `<tr><td><strong>${escHtml(a.username)}</strong></td><td style="font-size:11px;color:var(--muted)">${escHtml(a.email)}</td><td>${escHtml(a.quiz_title)}</td><td>${escHtml(a.subject_name)}</td><td>${a.difficulty}</td><td><strong>${a.score}</strong></td><td>${a.total}</td><td><span class="${pctClass}">${pct}%</span></td><td style="font-size:11px;white-space:nowrap;">${new Date(a.completed_at).toLocaleDateString()}</td></tr>`
+      }).join('')}</table></div>`;
+  } catch (e) { document.getElementById('progress-list').innerHTML = '<p style="color:var(--danger)">Error: ' + e.message + '</p>'; }
 }
 
 async function loadLogs() {
