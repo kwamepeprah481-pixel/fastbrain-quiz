@@ -175,10 +175,13 @@ function tryParseInlineOptions(lines, startIdx) {
 
 function looksLikeQuestion(text) {
   if (text.length < 20) {
-    // Very short: must end with a sentence-ending punctuation or ellipsis
     if (/[.?!…]$/.test(text)) return true;
     return false;
   }
+  // Reject section headers and instructions
+  if (/^(?:SECTION|PART|UNIT|TOPIC|CHAPTER)\s/i.test(text)) return false;
+  if (/\(questions?\s+\d+/i.test(text)) return false;
+  if (!text.includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(text)) return false;
   return true;
 }
 
