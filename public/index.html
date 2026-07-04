@@ -54,7 +54,6 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
 .progress-fill{height:100%;background:var(--accent);border-radius:10px;transition:width .4s ease;}
 .score-pill{background:var(--card);border:1px solid var(--border);border-radius:44px;padding:6px 16px;font-size:13px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);}
 .score-pill span{color:var(--accent);}
-.quit-btn{font-size:12px;padding:6px 14px;border-radius:44px;white-space:nowrap;}
 .timer-wrap{position:relative;width:54px;height:54px;flex-shrink:0;}
 .timer-wrap svg{transform:rotate(-90deg);}
 .timer-bg{fill:none;stroke:var(--border);stroke-width:4.5;}
@@ -98,6 +97,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
 .result-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;}
 .btn-outline{background:none;border:1px solid var(--border);border-radius:44px;padding:12px;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;}
 .btn-outline:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+.quit-btn{font-size:12px;padding:6px 14px;border-radius:44px;white-space:nowrap;}
 .btn-primary{background:var(--accent);border:none;border-radius:44px;padding:12px;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;font-weight:600;color:#fff;cursor:pointer;transition:all .2s;}
 .btn-primary:hover{background:#0e7490;}
 .review-heading{font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700;margin-bottom:1rem;padding-top:.5rem;border-top:1px solid var(--border);}
@@ -257,7 +257,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
         <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       </div>
       <div class="score-pill">Score: <span id="live-score">0</span></div>
-      <button class="btn-outline quit-btn" onclick="quitQuiz()">✕ Quit</button>
+      <button class="btn-outline quit-btn" onclick="quitQuiz()">Quit</button>
     </div>
     <div class="question-card pop" id="q-card">
       <p class="q-num-label" id="q-num-label">QUESTION 1</p>
