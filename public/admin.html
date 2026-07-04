@@ -648,13 +648,15 @@ function showParsedMaterial(data) {
   }
   renderMatQuestions();
 
-  document.getElementById('mat-quiz-id').value = subjectIdFromTitle(data.material.title || 'generated');
+  const subjId = data.material.subject_id || data.subject_id || '';
+  document.getElementById('mat-quiz-id').value = subjectIdFromTitle(subjId, data.material.title || 'generated');
   document.getElementById('mat-quiz-title').value = data.material.title + ' — Auto Quiz';
   document.getElementById('mat-quiz-desc').value = 'Auto-generated from uploaded material';
 }
 
-function subjectIdFromTitle(title) {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '-q';
+function subjectIdFromTitle(subjectId, title) {
+  const baseId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '-q';
+  return subjectId ? subjectId + '--' + baseId : baseId;
 }
 
 function escHtml(s) {

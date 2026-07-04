@@ -436,13 +436,17 @@ router.post('/auto-generate', upload.single('file'), async (req, res) => {
 
 router.post('/generate-quiz', async (req, res) => {
   try {
-    const { material_id, quiz_id, subject_id, title, description, difficulty, questions } = req.body;
+    let { material_id, quiz_id, subject_id, title, description, difficulty, questions } = req.body;
     if (!material_id || !quiz_id || !subject_id || !title || !questions || !Array.isArray(questions) || questions.length === 0) {
       return res.status(400).json({ error: 'Material ID, quiz ID, subject, title, and questions array required' });
     }
     const valid = questions.every(q => q.q && q.o && q.o.length === 4 && q.a >= 0 && q.a <= 3);
     if (!valid) {
       return res.status(400).json({ error: 'Each question must have q, o (4 options), and a valid answer index (0-3)' });
+    }
+    // Prefix quiz_id with subject_id to prevent cross-subject overwrites
+    if (!quiz_id.startsWith(subject_id + '--')) {
+      quiz_id = subject_id + '--' + quiz_id;
     }
     await db.run('INSERT OR REPLACE INTO quizzes (id, subject_id, title, description, difficulty, created_by) VALUES (?, ?, ?, ?, ?, ?)',
       [quiz_id, subject_id, title, description || '', difficulty || 'medium', req.user.id]);
