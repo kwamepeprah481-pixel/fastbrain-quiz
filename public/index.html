@@ -62,6 +62,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
 .question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;margin-bottom:1rem;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s;}
 .question-card:hover{box-shadow:var(--shadow-md);border-color:var(--border2);}
 .q-num-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;}
+.q-section{font-size:13px;color:var(--accent);font-weight:600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--accent-light);line-height:1.4;}
 .q-text{font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:600;line-height:1.5;color:var(--text);letter-spacing:-.2px;}
 .options-grid{display:grid;gap:9px;}
 .option-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem 1.1rem;text-align:left;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:12px;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;color:var(--text);width:100%;box-shadow:var(--shadow);}
@@ -555,9 +556,33 @@ function renderQ() {
   try { options = typeof q.options === 'string' ? JSON.parse(q.options) : q.options; } catch(e) { options = q.options || []; }
   document.getElementById('q-counter').textContent = `Question ${idx+1} of ${tot}`;
   document.getElementById('q-num-label').textContent = `QUESTION ${idx+1}`;
-  document.getElementById('q-text').textContent = q.question_text;
   document.getElementById('progress-fill').style.width = `${(idx/tot)*100}%`;
   document.getElementById('live-score').textContent = state.score;
+
+  // Check for section heading marker
+  let questionText = q.question_text;
+  let sectionText = null;
+  if (questionText.startsWith('__SECTION__')) {
+    const parts = questionText.split('\n');
+    sectionText = parts[0].replace('__SECTION__', '');
+    questionText = parts.slice(1).join('\n');
+  }
+  document.getElementById('q-text').textContent = questionText;
+  // Show section heading if present, hide otherwise
+  let sectionEl = document.getElementById('q-section');
+  if (!sectionEl) {
+    sectionEl = document.createElement('p');
+    sectionEl.id = 'q-section';
+    sectionEl.className = 'q-section';
+    document.getElementById('q-card').insertBefore(sectionEl, document.getElementById('q-num-label'));
+  }
+  if (sectionText) {
+    sectionEl.textContent = sectionText;
+    sectionEl.style.display = 'block';
+  } else {
+    sectionEl.style.display = 'none';
+  }
+
   const L = ['A','B','C','D'];
   document.getElementById('options-grid').innerHTML = options.map((o,i) =>
     `<button class="option-btn" id="opt-${i}" onclick="selectAns(${i})"><span class="option-letter">${L[i]}</span><span>${o}</span></button>`

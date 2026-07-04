@@ -58,14 +58,23 @@ function extractQuestions(text) {
   const lines = rawLines.map(l => l.trim());
   const questions = [];
   let i = 0;
+  let currentInstruction = null;
 
   while (i < lines.length) {
     if (!lines[i]) { i++; continue; }
     const mcq = parseMCQ(lines, i);
     if (mcq) {
+      if (currentInstruction) {
+        mcq.question = '__SECTION__' + currentInstruction + '\n' + mcq.question;
+        currentInstruction = null;
+      }
       questions.push({ q: mcq.question, o: mcq.options, a: mcq.answer });
       i = mcq.nextIndex;
       continue;
+    }
+    // Capture instruction lines as section headings for subsequent questions
+    if (!lines[i].includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(lines[i])) {
+      currentInstruction = lines[i];
     }
     i++;
   }
