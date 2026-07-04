@@ -54,6 +54,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
 .progress-fill{height:100%;background:var(--accent);border-radius:10px;transition:width .4s ease;}
 .score-pill{background:var(--card);border:1px solid var(--border);border-radius:44px;padding:6px 16px;font-size:13px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);}
 .score-pill span{color:var(--accent);}
+.quit-btn{font-size:12px;padding:6px 14px;border-radius:44px;white-space:nowrap;}
 .timer-wrap{position:relative;width:54px;height:54px;flex-shrink:0;}
 .timer-wrap svg{transform:rotate(-90deg);}
 .timer-bg{fill:none;stroke:var(--border);stroke-width:4.5;}
@@ -256,6 +257,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
         <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       </div>
       <div class="score-pill">Score: <span id="live-score">0</span></div>
+      <button class="btn-outline quit-btn" onclick="quitQuiz()">✕ Quit</button>
     </div>
     <div class="question-card pop" id="q-card">
       <p class="q-num-label" id="q-num-label">QUESTION 1</p>
@@ -477,6 +479,13 @@ async function abandonQuiz() {
   await api('/quizzes/' + inProgressQuiz.quiz_id + '/abandon', { method: 'POST' });
   inProgressQuiz = null;
   showSubjects();
+}
+
+function quitQuiz() {
+  if (!confirm('Quit this quiz? Your progress will be saved so you can continue later.')) return;
+  saveProgress();
+  clearTimer();
+  goHome();
 }
 
 async function selectSubject(id) {
