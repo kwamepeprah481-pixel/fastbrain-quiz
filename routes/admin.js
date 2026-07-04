@@ -17,7 +17,7 @@ router.get('/users', async (req, res) => {
     for (const u of users) {
       const stats = await db.get(
         `SELECT COUNT(*) as quizzes_taken, COALESCE(SUM(score), 0) as total_correct, COALESCE(SUM(total), 0) as total_questions,
-                ROUND(AVG(CAST(score AS REAL) / NULLIF(CAST(total AS REAL), 0) * 100), 1) as avg_percent
+                ROUND(AVG(CAST(score AS REAL) / CAST(total AS REAL) * 100), 1) as avg_percent
          FROM quiz_attempts WHERE user_id = ? AND status = ?`,
         [u.id, 'completed']
       );
