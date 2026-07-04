@@ -33,19 +33,53 @@ async function logAction(adminId, action, details) {
 }
 
 function htmlToPlainText(html) {
-  html = html.replace(/<(?:strong|b)>(.*?)<\/(?:strong|b)>/g, '**$1**');
-  html = html.replace(/<u>(.*?)<\/u>/g, '__$1__');
-  html = html.replace(/<(?:em|i)>(.*?)<\/(?:em|i)>/g, '*$1*');
+  // Preserve formatting markers before stripping HTML
+  html = html.replace(/<(?:strong|b)>(.*?)<\/(?:strong|b)>/g, '\x00B$1\x00b');
+  html = html.replace(/<u>(.*?)<\/u>/g, '\x00U$1\x00u');
+  html = html.replace(/<(?:em|i)>(.*?)<\/(?:em|i)>/g, '\x00I$1\x00i');
+
+  // Convert list tags to numbered/bulleted text (single pass to track counter per list)
+  let listCounter = 0;
+  html = html.replace(/<ol[^>]*>|<li>|<\/li>|<\/ol>|<ul[^>]*>|<\/ul>/gi, (match) => {
+    if (match.startsWith('<ol')) {
+      listCounter = 0;
+      const s = match.match(/start\s*=\s*["\']?(\d+)/i);
+      if (s) listCounter = parseInt(s[1]) - 1;
+      return '';
+    }
+    if (match === '<li>') {
+      listCounter++;
+      return listCounter + '. ';
+    }
+    if (match === '</li>') return '\n';
+    if (match === '</ol>' || match === '</ul>') return '\n';
+    if (match.startsWith('<ul')) return '';
+    return match;
+  });
+
+  // Handle <p> and <br> newlines
   html = html.replace(/<\/p>\s*<p>/g, '\n\n');
   html = html.replace(/<\/p>/g, '\n');
   html = html.replace(/<p>/g, '');
   html = html.replace(/<br\s*\/?>/g, '\n');
+
+  // Strip remaining HTML tags
   html = html.replace(/<[^>]*>/g, '');
+
+  // Decode HTML entities
   html = html.replace(/&amp;/g, '&');
   html = html.replace(/&lt;/g, '<');
   html = html.replace(/&gt;/g, '>');
   html = html.replace(/&quot;/g, '"');
   html = html.replace(/&#39;/g, "'");
+  html = html.replace(/&nbsp;/g, ' ');
+
+  // Convert formatting markers to final form
+  html = html.replace(/\x00B(.*?)\x00b/g, '**$1**');
+  html = html.replace(/\x00U(.*?)\x00u/g, '__$1__');
+  html = html.replace(/\x00I(.*?)\x00i/g, '*$1*');
+
+  // Clean up excessive whitespace
   html = html.replace(/\n{3,}/g, '\n\n');
   return html.trim();
 }
@@ -138,7 +172,7 @@ function extractQuestions(text) {
       continue;
     }
     // Capture instruction lines as section headings for subsequent questions
-    if (!lines[i].includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(lines[i].replace(/[\*_]/g, ''))) {
+    if (!lines[i].includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(lines[i].replace(/[\*_]/g, '').trim())) {
       currentInstruction = lines[i];
     }
     i++;
