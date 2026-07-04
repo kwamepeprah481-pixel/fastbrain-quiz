@@ -53,6 +53,40 @@ const MCQ_OPTION_RE = /^[\(]?[A-Da-d][\)\.\:\-]\s*/;
 const MCQ_OPTION_RE_G = /[\(]?[A-Da-d][\)\.\:\-]\s*/g;
 const MCQ_ANSWER_RE = /(?:answer|ans|correct|key)\s*:?\s*[\(]?([A-Da-d])[\)]?/i;
 
+function parseClozePassage(lines, startIdx) {
+  const line = lines[startIdx];
+  // Detect passage: contains gap markers like ---31---, ---32---
+  const gapRegex = /---\d+---/g;
+  const gaps = [];
+  let m;
+  while ((m = gapRegex.exec(line)) !== null) {
+    gaps.push(parseInt(m[0].replace(/-/g, '')));
+  }
+  if (gaps.length === 0) return null;
+  if (line.length < 30) return null;
+
+  let idx = startIdx + 1;
+  while (idx < lines.length && !lines[idx]) idx++;
+
+  const questions = [];
+  for (let g = 0; g < gaps.length; g++) {
+    const options = [];
+    for (let o = 0; o < 4; o++) {
+      if (idx >= lines.length || !MCQ_OPTION_RE.test(lines[idx])) return questions.length > 0 ? questions : null;
+      options.push(lines[idx].replace(MCQ_OPTION_RE, ''));
+      idx++;
+      while (idx < lines.length && !lines[idx]) idx++;
+    }
+    questions.push({
+      q: line + '\n\nChoose the word that is most suitable for gap ' + gaps[g] + '.',
+      o: options,
+      a: -1,
+      nextIndex: idx
+    });
+  }
+  return questions;
+}
+
 function extractQuestions(text) {
   const rawLines = text.split('\n');
   const lines = rawLines.map(l => l.trim());
@@ -62,6 +96,19 @@ function extractQuestions(text) {
 
   while (i < lines.length) {
     if (!lines[i]) { i++; continue; }
+
+    // Try cloze passage format first (passage with gap markers ---N---)
+    const passageQuestions = parseClozePassage(lines, i);
+    if (passageQuestions) {
+      for (const pq of passageQuestions) {
+        questions.push({ q: pq.q, o: pq.o, a: pq.a });
+      }
+      const last = passageQuestions[passageQuestions.length - 1];
+      i = last.nextIndex;
+      currentInstruction = null;
+      continue;
+    }
+
     const mcq = parseMCQ(lines, i);
     if (mcq) {
       if (currentInstruction) {
