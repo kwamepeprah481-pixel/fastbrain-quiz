@@ -62,6 +62,7 @@ function pgify(sql) {
   result = result.replace(/datetime\('now'\)/gi, 'CURRENT_TIMESTAMP');
   result = result.replace(/datetime\(\s*\)/gi, 'CURRENT_TIMESTAMP');
   result = result.replace(/\?/g, () => `$${++paramCount}`);
+  result = result.replace(/ROUND\(([^,]+(?:\([^)]*\)[^,]*)*),\s*(\d+)\)/gi, 'ROUND(CAST($1 AS NUMERIC), $2)');
   return result;
 }
 
