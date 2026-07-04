@@ -77,8 +77,18 @@ function parseMCQ(lines, startIdx) {
   let question = lines[startIdx];
   if (question.length < 10) return null;
 
+  // Track whether a number prefix was present (real questions usually have one)
+  const hadPrefix = /^\d+[\.\)]/.test(question);
+
   // Strip leading number like "1.", "1)", "Question 1:", etc.
   question = question.replace(/^(?:Question\s*)?\d+[\.\)]\s*/i, '');
+
+  // Skip section headers (SECTION A:, PART I:, etc.)
+  if (/^(?:SECTION|PART|UNIT|TOPIC|CHAPTER)\s/i.test(question)) return null;
+  if (/\(questions?\s+\d+/i.test(question)) return null;
+
+  // If no number prefix and no question mark, likely a header or instruction
+  if (!hadPrefix && !question.includes('?')) return null;
 
   let idx = startIdx + 1;
   // Skip blank lines after question
