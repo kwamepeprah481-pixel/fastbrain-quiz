@@ -87,8 +87,8 @@ function parseMCQ(lines, startIdx) {
   if (/^(?:SECTION|PART|UNIT|TOPIC|CHAPTER)\s/i.test(question)) return null;
   if (/\(questions?\s+\d+/i.test(question)) return null;
 
-  // If no number prefix and no question mark, likely a header or instruction
-  if (!hadPrefix && !question.includes('?')) return null;
+  // Reject instruction lines (not real questions)
+  if (!hadPrefix && !question.includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(question)) return null;
 
   let idx = startIdx + 1;
   // Skip blank lines after question
