@@ -302,6 +302,7 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
 const API = window.location.origin + '/api';
 const CIRC = 2*Math.PI*22;
 const TMAX = 40;
+const TMAX_PASSAGE = 90;
 
 let state = { user: null, token: null, isLogin: true, subject: null, quiz: null, questions: [], currentQ: 0, score: 0, answers: [], answered: false, timerInt: null, graded: [] };
 
@@ -590,7 +591,8 @@ function renderQ() {
   const fb = document.getElementById('feedback-msg'); fb.style.display = 'none'; fb.className = 'fb';
   document.getElementById('next-btn').disabled = true;
   state.answered = false;
-  startTimer();
+  const isPassage = questionText.includes('\n\n');
+  startTimer(isPassage ? TMAX_PASSAGE : TMAX);
 }
 
 function selectAns(idx) {
@@ -629,15 +631,15 @@ function nextQuestion() {
   else renderQ();
 }
 
-function startTimer() {
+function startTimer(tmax) {
   const ring = document.getElementById('timer-ring');
   const num = document.getElementById('timer-num');
-  let t = TMAX;
+  let t = tmax;
   ring.style.strokeDasharray = CIRC; ring.style.stroke = '#0891b2'; ring.style.strokeDashoffset = 0;
   num.textContent = t; num.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text');
   state.timerInt = setInterval(() => {
     t--; num.textContent = t;
-    ring.style.strokeDashoffset = CIRC * (1 - t/TMAX);
+    ring.style.strokeDashoffset = CIRC * (1 - t/tmax);
     if (t <= 10) { ring.style.stroke = '#dc2626'; num.style.color = '#dc2626'; }
     else if (t <= 20) { ring.style.stroke = '#f59e0b'; num.style.color = '#b45309'; }
     if (t <= 0) { clearInterval(state.timerInt); timeOut(); }
