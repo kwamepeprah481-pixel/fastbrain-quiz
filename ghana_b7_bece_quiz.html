@@ -243,6 +243,13 @@ const CIRC = 2*Math.PI*22;
 const TMAX = 40;
 const TMAX_PASSAGE = 90;
 
+function fmt(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.*?)__/g, '<u>$1</u>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+}
+
 const DATA = {
   subjects:[
     {id:'eng',name:'English Language',icon:'📖',desc:'Grammar, Comprehension & Literature',cls:'eng',quizzes:['e1','e2']},
@@ -719,7 +726,7 @@ function renderQ(){
   const idx=state.currentQ;
   document.getElementById('q-counter').textContent=`Question ${idx+1} of ${tot}`;
   document.getElementById('q-num-label').textContent=`QUESTION ${idx+1}`;
-  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('q-text').innerHTML=fmt(q.q);
   document.getElementById('progress-fill').style.width=`${(idx/tot)*100}%`;
   document.getElementById('live-score').textContent=state.score;
   const L=['A','B','C','D'];
@@ -818,7 +825,7 @@ function toggleReview(){
     let ans=`<div class="rev-ans">Correct answer: <span class="ca">${L[q.a]}. ${q.o[q.a]}</span>`;
     if(!isC&&!isS)ans+=` &nbsp;|&nbsp; Your answer: <span class="wa">${L[ua]}. ${q.o[ua]}</span>`;
     ans+='</div>';
-    return `<div class="rev-item ${cls}"><div class="rev-header"><span class="rev-q">${i+1}. ${q.q}</span>${badge}</div>${ans}</div>`;
+    return `<div class="rev-item ${cls}"><div class="rev-header"><span class="rev-q">${i+1}. ${fmt(q.q)}</span>${badge}</div>${ans}</div>`;
   }).join('');
   sec.scrollIntoView({behavior:'smooth',block:'start'});
 }

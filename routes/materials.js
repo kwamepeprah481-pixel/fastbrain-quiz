@@ -32,9 +32,27 @@ async function logAction(adminId, action, details) {
     [adminId, action, JSON.stringify(details)]);
 }
 
+function htmlToPlainText(html) {
+  html = html.replace(/<(?:strong|b)>(.*?)<\/(?:strong|b)>/g, '**$1**');
+  html = html.replace(/<u>(.*?)<\/u>/g, '__$1__');
+  html = html.replace(/<(?:em|i)>(.*?)<\/(?:em|i)>/g, '*$1*');
+  html = html.replace(/<\/p>\s*<p>/g, '\n\n');
+  html = html.replace(/<\/p>/g, '\n');
+  html = html.replace(/<p>/g, '');
+  html = html.replace(/<br\s*\/?>/g, '\n');
+  html = html.replace(/<[^>]*>/g, '');
+  html = html.replace(/&amp;/g, '&');
+  html = html.replace(/&lt;/g, '<');
+  html = html.replace(/&gt;/g, '>');
+  html = html.replace(/&quot;/g, '"');
+  html = html.replace(/&#39;/g, "'");
+  html = html.replace(/\n{3,}/g, '\n\n');
+  return html.trim();
+}
+
 async function parseDocx(filePath) {
-  const result = await mammoth.extractRawText({ path: filePath });
-  return result.value;
+  const result = await mammoth.convertToHtml({ path: filePath });
+  return htmlToPlainText(result.value);
 }
 
 async function parsePdf(filePath) {
@@ -120,7 +138,7 @@ function extractQuestions(text) {
       continue;
     }
     // Capture instruction lines as section headings for subsequent questions
-    if (!lines[i].includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(lines[i])) {
+    if (!lines[i].includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(lines[i].replace(/[\*_]/g, ''))) {
       currentInstruction = lines[i];
     }
     i++;

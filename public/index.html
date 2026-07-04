@@ -304,6 +304,13 @@ const CIRC = 2*Math.PI*22;
 const TMAX = 40;
 const TMAX_PASSAGE = 90;
 
+function fmt(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.*?)__/g, '<u>$1</u>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+}
+
 let state = { user: null, token: null, isLogin: true, subject: null, quiz: null, questions: [], currentQ: 0, score: 0, answers: [], answered: false, timerInt: null, graded: [] };
 
 function getToken() { return localStorage.getItem('token'); }
@@ -568,7 +575,7 @@ function renderQ() {
     sectionText = parts[0].replace('__SECTION__', '');
     questionText = parts.slice(1).join('\n');
   }
-  document.getElementById('q-text').textContent = questionText;
+  document.getElementById('q-text').innerHTML = fmt(questionText);
   // Show section heading if present, hide otherwise
   let sectionEl = document.getElementById('q-section');
   if (!sectionEl) {
@@ -719,7 +726,7 @@ function showResults(result) {
     let ans = `<div class="rev-ans">Correct answer: <span class="ca">${L[q.answer]}. ${options[q.answer] || ''}</span>`;
     if (!isC && !isS && ua != null) ans += ` &nbsp;|&nbsp; Your answer: <span class="wa">${L[ua]}. ${options[ua] || ''}</span>`;
     ans += '</div>';
-    return `<div class="rev-item ${cls}"><div class="rev-header"><span class="rev-q">${i+1}. ${q.question_text}</span>${badge}</div>${ans}</div>`;
+    return `<div class="rev-item ${cls}"><div class="rev-header"><span class="rev-q">${i+1}. ${fmt(q.question_text)}</span>${badge}</div>${ans}</div>`;
   }).join('');
 
   setTimeout(() => { ring.style.strokeDashoffset = 345.4 * (1 - pct / 100); }, 120);
