@@ -50,7 +50,7 @@ async function parseFile(filePath, ext) {
 }
 
 const MCQ_OPTION_RE = /^[\(]?[A-Da-d][\)\.\:\-]\s*/;
-const MCQ_OPTION_RE_G = /[\(]?[A-Da-d][\)\.\:\-]\s*/g;
+const MCQ_OPTION_RE_G = /(?:\(?[A-D]|(?<![a-zA-Z])\(?[a-d])[\)\.\:\-]\s*/g;
 const MCQ_ANSWER_RE = /(?:answer|ans|correct|key)\s*:?\s*[\(]?([A-Da-d])[\)]?/i;
 
 function parseClozePassage(lines, startIdx) {
@@ -143,9 +143,6 @@ function parseMCQ(lines, startIdx) {
   if (/^(?:SECTION|PART|UNIT|TOPIC|CHAPTER)\s/i.test(question)) return null;
   if (/\(questions?\s+\d+/i.test(question)) return null;
 
-  // Reject instruction lines (not real questions)
-  if (!hadPrefix && !question.includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(question)) return null;
-
   let idx = startIdx + 1;
   // Skip blank lines after question
   while (idx < lines.length && !lines[idx]) idx++;
@@ -177,6 +174,9 @@ function parseMCQ(lines, startIdx) {
       idx = plainOpts.nextIndex;
     }
   }
+
+  // Reject instruction lines (not real questions) — only after checking for options
+  if (options.length !== 4 && !hadPrefix && !question.includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(question)) return null;
 
   if (options.length !== 4) return null;
 
