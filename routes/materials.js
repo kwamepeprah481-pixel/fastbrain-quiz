@@ -51,7 +51,7 @@ async function parseFile(filePath, ext) {
 
 const MCQ_OPTION_RE = /^[\(]?[A-Da-d][\)\.\:\-]\s*/;
 const MCQ_OPTION_RE_G = /(?:\(?[A-D]|(?<![a-zA-Z])\(?[a-d])[\)\.\:\-]\s*/g;
-const MCQ_ANSWER_RE = /(?:answer|ans|correct|key)\s*:?\s*[\(]?([A-Da-d])[\)]?/i;
+const MCQ_ANSWER_RE = /\b(?:answer|ans|correct|key)\s*:?\s*[\(]?([A-Da-d])[\)]?/i;
 
 function parseClozePassage(lines, startIdx) {
   const line = lines[startIdx];
