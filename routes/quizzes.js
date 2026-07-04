@@ -102,8 +102,8 @@ router.post('/quizzes/:quizId/save-progress', authMiddleware, async (req, res) =
 router.post('/quizzes/:quizId/abandon', authMiddleware, async (req, res) => {
   try {
     await db.run(
-      'UPDATE quiz_attempts SET status = ?, completed_at = datetime(?) WHERE user_id = ? AND quiz_id = ? AND status = ?',
-      ['abandoned', 'now', req.user.id, req.params.quizId, 'in_progress']
+      'UPDATE quiz_attempts SET status = ?, completed_at = ? WHERE user_id = ? AND quiz_id = ? AND status = ?',
+      ['abandoned', new Date().toISOString(), req.user.id, req.params.quizId, 'in_progress']
     );
     res.json({ ok: true });
   } catch (e) {
@@ -136,13 +136,13 @@ router.post('/quizzes/:quizId/submit', authMiddleware, async (req, res) => {
     );
     if (existing) {
       await db.run(
-        'UPDATE quiz_attempts SET score = ?, answers = ?, status = ?, completed_at = datetime(?) WHERE id = ?',
-        [score, JSON.stringify(answers), 'completed', 'now', existing.id]
+        'UPDATE quiz_attempts SET score = ?, answers = ?, status = ?, completed_at = ? WHERE id = ?',
+        [score, JSON.stringify(answers), 'completed', new Date().toISOString(), existing.id]
       );
     } else {
       await db.run(
-        'INSERT INTO quiz_attempts (user_id, quiz_id, score, total, answers, status, completed_at) VALUES (?, ?, ?, ?, ?, ?, datetime(?))',
-        [req.user.id, req.params.quizId, score, questions.length, JSON.stringify(answers), 'completed', 'now']
+        'INSERT INTO quiz_attempts (user_id, quiz_id, score, total, answers, status, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [req.user.id, req.params.quizId, score, questions.length, JSON.stringify(answers), 'completed', new Date().toISOString()]
       );
     }
     const attempt = await db.get(

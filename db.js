@@ -58,9 +58,10 @@ function pgify(sql) {
     return `INSERT INTO ${upsertMatch[1]} (${cols.join(', ')}) VALUES (${pgVals.join(', ')}) ON CONFLICT (id) DO UPDATE SET ${setClause}`;
   }
 
-  let result = sql.replace(/\?/g, () => `$${++paramCount}`);
-  result = result.replace(/datetime\(\?\)/g, 'CURRENT_TIMESTAMP');
-  result = result.replace(/datetime\('now'\)/g, 'CURRENT_TIMESTAMP');
+  let result = sql.replace(/datetime\(\s*\?\s*\)/gi, 'CURRENT_TIMESTAMP');
+  result = result.replace(/datetime\('now'\)/gi, 'CURRENT_TIMESTAMP');
+  result = result.replace(/datetime\(\s*\)/gi, 'CURRENT_TIMESTAMP');
+  result = result.replace(/\?/g, () => `$${++paramCount}`);
   return result;
 }
 

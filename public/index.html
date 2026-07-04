@@ -634,14 +634,19 @@ async function submitAndShowResults() {
     state.graded = result.graded || [];
     showResults(result);
   } catch (e) {
-    showResults({ score: state.score, total: state.questions.length, graded: [] });
+    const gradedFallback = state.questions.map((q, i) => ({
+      user_answer: state.answers[i],
+      correct_answer: q.answer,
+      correct: state.answers[i] === q.answer
+    }));
+    showResults({ score: state.score, total: state.questions.length, graded: gradedFallback });
   }
 }
 
 function showResults(result) {
   const tot = state.questions.length;
-  const cor = result.graded ? result.graded.filter(g => g.correct).length : state.score;
   const gradedArr = result.graded || [];
+  const cor = gradedArr.length > 0 ? gradedArr.filter(g => g.correct).length : state.score;
   const skip = state.answers.filter(a => a === -1).length;
   const wrong = tot - cor - skip;
   const pct = Math.round((cor / tot) * 100);
