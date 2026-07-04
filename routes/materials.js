@@ -185,11 +185,13 @@ function parseMCQ(lines, startIdx) {
   let question = lines[startIdx];
   if (question.length < 10) return null;
 
-  // Track whether a number prefix was present (real questions usually have one)
-  const hadPrefix = /^\d+[\.\)]/.test(question);
+  // Strip leading/trailing formatting markers (*/_) before prefix detection
+  const stripped = question.replace(/[\*_]/g, '');
+  const hadPrefix = /^\d+[\.\)]/.test(stripped);
 
-  // Strip leading number like "1.", "1)", "Question 1:", etc.
-  question = question.replace(/^(?:Question\s*)?\d+[\.\)]\s*/i, '');
+  // Strip leading formatting markers + number prefix + trailing markers
+  question = question.replace(/^[\*_]+(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '')
+    .replace(/[\*_]+$/, '');
 
   // Skip section headers (SECTION A:, PART I:, etc.)
   if (/^(?:SECTION|PART|UNIT|TOPIC|CHAPTER)\s/i.test(question)) return null;
