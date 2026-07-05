@@ -79,6 +79,9 @@ function htmlToPlainText(html) {
   html = html.replace(/\x00U(.*?)\x00u/g, '__$1__');
   html = html.replace(/\x00I(.*?)\x00i/g, '*$1*');
 
+  // Remove list numbering incorrectly applied to option lines (e.g., "1. A. stains" → "A. stains")
+  html = html.replace(/^\d+[\.\)]\s+(?=[A-Da-d][\.\)])/gm, '');
+
   // Clean up excessive whitespace
   html = html.replace(/\n{3,}/g, '\n\n');
   return html.trim();
@@ -107,15 +110,18 @@ const MCQ_ANSWER_RE = /\b(?:answer|ans|correct|key)\s*:?\s*[\(]?([A-Da-d])[\)]?(
 
 function parseClozePassage(lines, startIdx) {
   const line = lines[startIdx];
-  // Detect passage: contains gap markers like ---31---, ---32---
-  const gapRegex = /---\d+---/g;
+  // Detect passage: contains gap markers like ---31--- or ---**31**---
+  const gapRegex = /---\**(\d+)\**---/g;
   const gaps = [];
   let m;
   while ((m = gapRegex.exec(line)) !== null) {
-    gaps.push(parseInt(m[0].replace(/-/g, '')));
+    gaps.push(parseInt(m[1]));
   }
   if (gaps.length === 0) return null;
   if (line.length < 30) return null;
+
+  // Clean passage text: strip ** from gap markers
+  const cleanLine = line.replace(gapRegex, '---$1---');
 
   let idx = startIdx + 1;
   while (idx < lines.length && !lines[idx]) idx++;
@@ -124,13 +130,19 @@ function parseClozePassage(lines, startIdx) {
   for (let g = 0; g < gaps.length; g++) {
     const options = [];
     for (let o = 0; o < 4; o++) {
-      if (idx >= lines.length || !MCQ_OPTION_RE.test(lines[idx])) return questions.length > 0 ? questions : null;
-      options.push(lines[idx].replace(MCQ_OPTION_RE, ''));
+      if (idx >= lines.length) return questions.length > 0 ? questions : null;
+      let optLine = lines[idx];
+      // Handle list-numbered option lines (e.g., "1. A. stains" → "A. stains")
+      if (!MCQ_OPTION_RE.test(optLine)) {
+        optLine = optLine.replace(/^\d+[\.\)]\s*/, '');
+      }
+      if (!MCQ_OPTION_RE.test(optLine)) return questions.length > 0 ? questions : null;
+      options.push(optLine.replace(MCQ_OPTION_RE, ''));
       idx++;
       while (idx < lines.length && !lines[idx]) idx++;
     }
     questions.push({
-      q: line + '\n\nChoose the word that is most suitable for gap ' + gaps[g] + '.',
+      q: cleanLine + '\n\nChoose the word that is most suitable for gap ' + gaps[g] + '.',
       o: options,
       a: -1,
       nextIndex: idx
@@ -172,7 +184,8 @@ function extractQuestions(text) {
       continue;
     }
     // Capture instruction lines as section headings for subsequent questions
-    if (!lines[i].includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(lines[i].replace(/[\*_]/g, '').trim())) {
+    const instrCheck = lines[i].replace(/[\*_]/g, '').trim();
+    if (!instrCheck.includes('?') && (/^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(instrCheck) || /(?:choose the|from the options|for each|the correct|the suitable)/i.test(instrCheck))) {
       currentInstruction = lines[i];
     }
     i++;
@@ -229,8 +242,11 @@ function parseMCQ(lines, startIdx) {
     }
   }
 
-  // Reject instruction lines (not real questions) — only after checking for options
-  if (options.length !== 4 && !hadPrefix && !question.includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(question)) return null;
+  // Reject instruction lines (not real questions)
+  if (!hadPrefix && !question.includes('?')) {
+    const qLower = question.toLowerCase();
+    if (/^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(question) || /(?:choose the|from the options|for each)/i.test(qLower)) return null;
+  }
 
   if (options.length !== 4) return null;
 
@@ -291,7 +307,10 @@ function looksLikeQuestion(text) {
   // Reject section headers and instructions
   if (/^(?:SECTION|PART|UNIT|TOPIC|CHAPTER)\s/i.test(text)) return false;
   if (/\(questions?\s+\d+/i.test(text)) return false;
-  if (!text.includes('?') && /^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(text)) return false;
+  if (!text.includes('?')) {
+    if (/^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(text)) return false;
+    if (/(?:choose the|from the options|for each)/i.test(text)) return false;
+  }
   return true;
 }
 
