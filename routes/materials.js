@@ -38,22 +38,34 @@ function htmlToPlainText(html) {
   html = html.replace(/<u>(.*?)<\/u>/g, '\x00U$1\x00u');
   html = html.replace(/<(?:em|i)>(.*?)<\/(?:em|i)>/g, '\x00I$1\x00i');
 
-  // Convert list tags to numbered/bulleted text (single pass to track counter per list)
-  let listCounter = 0;
-  html = html.replace(/<ol[^>]*>|<li>|<\/li>|<\/ol>|<ul[^>]*>|<\/ul>/gi, (match) => {
+  // Convert list tags with nesting support.
+  // Top-level items get numbered (1., 2., 3.…), nested items get lettered (a., b., c., d.…).
+  // A newline is emitted before a nested <ol><ul> so the first option doesn't merge with question text.
+  const listStack = [];
+  html = html.replace(/<ol[^>]*>|<\/ol>|<ul[^>]*>|<\/ul>|<li>|<\/li>/gi, (match) => {
     if (match.startsWith('<ol')) {
-      listCounter = 0;
       const s = match.match(/start\s*=\s*["\']?(\d+)/i);
-      if (s) listCounter = parseInt(s[1]) - 1;
-      return '';
+      listStack.push({ counter: (s ? parseInt(s[1]) - 1 : 0), isOrdered: true });
+      return listStack.length > 1 ? '\n' : '';
+    }
+    if (match.startsWith('<ul')) {
+      listStack.push({ counter: 0, isOrdered: false });
+      return listStack.length > 1 ? '\n' : '';
+    }
+    if (match === '</ol>' || match === '</ul>') {
+      listStack.pop();
+      return '\n';
     }
     if (match === '<li>') {
-      listCounter++;
-      return listCounter + '. ';
+      if (listStack.length === 0) return '* ';
+      const cur = listStack[listStack.length - 1];
+      cur.counter++;
+      if (listStack.length > 1) {
+        return String.fromCharCode(96 + cur.counter) + '. ';
+      }
+      return cur.counter + '. ';
     }
     if (match === '</li>') return '\n';
-    if (match === '</ol>' || match === '</ul>') return '\n';
-    if (match.startsWith('<ul')) return '';
     return match;
   });
 
@@ -73,6 +85,8 @@ function htmlToPlainText(html) {
   html = html.replace(/&quot;/g, '"');
   html = html.replace(/&#39;/g, "'");
   html = html.replace(/&nbsp;/g, ' ');
+  html = html.replace(/&deg;/g, '°');
+  html = html.replace(/&#176;/g, '°');
 
   // Convert formatting markers to final form
   html = html.replace(/\x00B(.*?)\x00b/g, '**$1**');
@@ -319,32 +333,81 @@ function tryParsePlainOptions(lines, startIdx) {
 
   if (!looksLikeQuestion(question)) return null;
 
+  // Strip any leading number prefix from question (e.g. "5. All the following…" → "All the following…")
+  question = question.replace(/^[\*_]+(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '').replace(/[\*_]+$/, '').trim();
+
+  // Detect an absorbed first option fused onto the question line.
+  // Three patterns:
+  //   1) "?1. Option"         – '?' immediately before the option number
+  //   2) "? 6. 7. 1. Option"  – '?' followed by artifact numbers then the real option
+  //   3) "except 1. Option"    – no '?' at all, option attached at the end
+  let absorbedOpt = null;
+  {
+    // Work on the suffix after the last '?' (if any)
+    const qi = question.lastIndexOf('?');
+    const suffix = qi >= 0 ? question.slice(qi + 1).trim() : question;
+    // Find every "N." segment in the suffix and pick the LAST one whose N is 1-4
+    const segments = [...suffix.matchAll(/(\d+)[\.\)]\s*/g)];
+    let pickIdx = -1;
+    for (let si = segments.length - 1; si >= 0; si--) {
+      const n = parseInt(segments[si][1]);
+      if (n >= 1 && n <= 4) { pickIdx = segments[si].index; break; }
+    }
+    if (pickIdx >= 0) {
+      const absText = suffix.slice(pickIdx).trim();
+      // Only treat it as absorbed if there's actual option text (not just a bare number)
+      const textAfter = absText.replace(/^\d+[\.\)]\s*/, '').trim();
+      if (textAfter.length > 0) {
+        absorbedOpt = absText;
+        // Chop off everything from the split point
+        if (qi >= 0) {
+          question = question.slice(0, qi + 1).trim();
+          // Restore the '?'
+          question = question.replace(/\?+$/, '?');
+        } else {
+          question = question.slice(0, pickIdx).trim();
+        }
+      }
+    }
+  }
+
   let idx = startIdx + 1;
   while (idx < lines.length && !lines[idx]) idx++;
 
-  // Check that we have a blank line between each option (separated pattern)
-  // and that there are at least 4 non-blank lines within reasonable range
   const optLines = [];
   let scanIdx = idx;
   while (scanIdx < Math.min(idx + 15, lines.length) && optLines.length < 4) {
     if (lines[scanIdx]) {
       optLines.push({ text: lines[scanIdx], idx: scanIdx });
       scanIdx++;
+      if (absorbedOpt && optLines.length >= 3) break;
     } else {
       scanIdx++;
     }
   }
 
-  if (optLines.length !== 4) return null;
+  if (absorbedOpt && optLines.length !== 3) return null;
+  if (!absorbedOpt && optLines.length !== 4) return null;
 
   for (const opt of optLines) {
     if (opt.text.length > 150) return null;
   }
 
+  // Strip all leading number prefixes from option text (handles artifacts like "6. 7. 1. Rain forest")
+  const stripNumericPrefixes = (s) => {
+    let r = s;
+    while (/^\d+[\.\)]\s*/.test(r)) r = r.replace(/^\d+[\.\)]\s*/, '');
+    return r.trim();
+  };
+  let options = optLines.map(o => stripNumericPrefixes(o.text));
+  if (absorbedOpt) {
+    options = [stripNumericPrefixes(absorbedOpt), ...options];
+  }
+
   return {
     question,
-    options: optLines.map(o => o.text),
-    nextIndex: optLines[3].idx + 1
+    options,
+    nextIndex: optLines[optLines.length - 1].idx + 1
   };
 }
 
