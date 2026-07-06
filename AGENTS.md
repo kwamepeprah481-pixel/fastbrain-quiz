@@ -5,7 +5,7 @@
 **Deployed fixes (commit `2bf3901`):**
 
 1. **`htmlToPlainText` rewritten with stack-based nesting** — Top-level `<li>` → `1.`, nested `<li>` → `a.` (was: all flat numbered). Also emits `\n` before nested `<ol>`/`<ul>` so first option doesn't merge onto question line.
-2. **`tryParsePlainOptions` strips number prefixes from question + options** — Now calls `question.replace(/^[\*_]+(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '')` and `opt.replace(/^\d+[\.\)]\s*/, '')`. Also splits absorbed first option when fused onto question line (regex `/([?])(\d+[\.\)]\s+)/`).
+2. **`tryParsePlainOptions` strips number prefixes from question + options** — Now calls `question.replace(/^[\*_]*(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '')` and `opt.replace(/^\d+[\.\)]\s*/, '')`. Also splits absorbed first option when fused onto question line (regex `/([?])(\d+[\.\)]\s+)/`).
 3. **`htmlToPlainText` entity decoding** — Added `&deg;` and `&#176;` → `°` for degree symbol.
 
 **Second round fixes (current: uncommitted):**
@@ -14,6 +14,7 @@
 2. **`tryParsePlainOptions` prefers lettered over numbered when mixed** — Detects documents where options appear as both flat numbered lines (e.g. `7. Grasshopper`) AND nested lettered lines (e.g. `a. I only`). Picks the lettered options and skips numbered artifacts. Fixes Q6.
 3. **`tryParsePlainOptions` strips letter prefix from options** — When taking lettered options from the mixed-format path, strips the `a.`/`b.` prefix so options show as clean text.
 4. **Degree symbol hex entity** — Added `&#x?B0;` (hex variant of `&#176;`) to entity decoder.
+5. **Number prefix stripped even without formatting markers** — Changed `[\*_]+` to `[\*_]*` in `parseMCQ`'s question-stripping regex so plain-numbered questions (e.g. `11. Digestion of protein...`) also get clean text.
 
 **Previous 5 fixes for English document extraction (7638bc1):**
 

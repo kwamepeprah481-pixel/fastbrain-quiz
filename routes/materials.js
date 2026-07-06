@@ -218,7 +218,7 @@ function parseMCQ(lines, startIdx) {
   const hadPrefix = /^\d+[\.\)]/.test(stripped);
 
   // Strip leading formatting markers + number prefix + trailing markers
-  question = question.replace(/^[\*_]+(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '')
+  question = question.replace(/^[\*_]*(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '')
     .replace(/[\*_]+$/, '');
 
   // Skip section headers (SECTION A:, PART I:, etc.)
@@ -336,7 +336,7 @@ function tryParsePlainOptions(lines, startIdx) {
   if (!looksLikeQuestion(question)) return null;
 
   // Strip any leading number prefix from question (e.g. "5. All the following…" → "All the following…")
-  question = question.replace(/^[\*_]+(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '').replace(/[\*_]+$/, '').trim();
+  question = question.replace(/^[\*_]*(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '').replace(/[\*_]+$/, '').trim();
 
   // Detect an absorbed first option fused onto the question line.
   // Three patterns:
