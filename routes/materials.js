@@ -392,12 +392,25 @@ function tryParsePlainOptions(lines, startIdx) {
 
   let optLines;
   if (hasLettered && hasNumbered && !absorbedOpt) {
-    // Prefer lettered options, skipping empty ones (artifacts from broken multilevel lists)
+    // Scan for lettered options, but stop if we cross into the next question.
+    // Track numbered lines encountered — if we hit a question boundary (numbered line
+    // with >20 chars that's not an option), use those numbered lines as the options.
     optLines = [];
+    const numberedLines = [];
     let extIdx = idx;
     while (extIdx < Math.min(idx + 20, lines.length) && optLines.length < 4) {
       if (lines[extIdx]) {
-        if (MCQ_OPTION_RE.test(lines[extIdx])) {
+        // Check if this line looks like the next question (numbered, long, not letter-option)
+        const numMatch = lines[extIdx].match(/^(\d+)[\.\)]\s*/);
+        if (numMatch && lines[extIdx].length > 20 && !MCQ_OPTION_RE.test(lines[extIdx])) {
+          if (numberedLines.length >= 3) {
+            optLines = numberedLines.slice(0, 4);
+          }
+          break;
+        }
+        if (numMatch) {
+          numberedLines.push({ text: lines[extIdx], idx: extIdx });
+        } else if (MCQ_OPTION_RE.test(lines[extIdx])) {
           const txt = lines[extIdx].replace(MCQ_OPTION_RE, '').trim();
           if (txt) optLines.push({ text: lines[extIdx], idx: extIdx });
         }
