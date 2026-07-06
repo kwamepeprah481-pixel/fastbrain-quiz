@@ -87,6 +87,7 @@ function htmlToPlainText(html) {
   html = html.replace(/&nbsp;/g, ' ');
   html = html.replace(/&deg;/g, '°');
   html = html.replace(/&#176;/g, '°');
+  html = html.replace(/&#x?B0;/gi, '°');
 
   // Convert formatting markers to final form
   html = html.replace(/\x00B(.*?)\x00b/g, '**$1**');
@@ -230,8 +231,9 @@ function parseMCQ(lines, startIdx) {
 
   let options = [];
   // Try parsing options on separate lines
-  while (idx < lines.length && MCQ_OPTION_RE.test(lines[idx])) {
-    options.push(lines[idx].replace(MCQ_OPTION_RE, ''));
+  while (idx < lines.length && MCQ_OPTION_RE.test(lines[idx]) && options.length < 4) {
+    const optText = lines[idx].replace(MCQ_OPTION_RE, '').trim();
+    if (optText) options.push(optText);
     idx++;
     while (idx < lines.length && !lines[idx]) idx++;
   }
@@ -374,16 +376,38 @@ function tryParsePlainOptions(lines, startIdx) {
   let idx = startIdx + 1;
   while (idx < lines.length && !lines[idx]) idx++;
 
-  const optLines = [];
+  // Collect up to 8 candidate lines to detect mixed formats
+  const candidates = [];
   let scanIdx = idx;
-  while (scanIdx < Math.min(idx + 15, lines.length) && optLines.length < 4) {
+  while (scanIdx < Math.min(idx + 20, lines.length) && candidates.length < 8) {
     if (lines[scanIdx]) {
-      optLines.push({ text: lines[scanIdx], idx: scanIdx });
-      scanIdx++;
-      if (absorbedOpt && optLines.length >= 3) break;
-    } else {
-      scanIdx++;
+      candidates.push({ text: lines[scanIdx], idx: scanIdx });
     }
+    scanIdx++;
+  }
+
+  // Determine if we have a mix of lettered (A-D/a-d) and numbered lines
+  const hasLettered = candidates.some(c => MCQ_OPTION_RE.test(c.text));
+  const hasNumbered = candidates.some(c => /^\d+[\.\)]\s*/.test(c.text));
+
+  let optLines;
+  if (hasLettered && hasNumbered && !absorbedOpt) {
+    // Prefer lettered options, skipping empty ones (artifacts from broken multilevel lists)
+    optLines = [];
+    let extIdx = idx;
+    while (extIdx < Math.min(idx + 20, lines.length) && optLines.length < 4) {
+      if (lines[extIdx]) {
+        if (MCQ_OPTION_RE.test(lines[extIdx])) {
+          const txt = lines[extIdx].replace(MCQ_OPTION_RE, '').trim();
+          if (txt) optLines.push({ text: lines[extIdx], idx: extIdx });
+        }
+      }
+      extIdx++;
+    }
+  } else {
+    // Standard: use first 4 candidates
+    optLines = candidates.slice(0, 4);
+    if (absorbedOpt && optLines.length > 3) optLines = optLines.slice(0, 3);
   }
 
   if (absorbedOpt && optLines.length !== 3) return null;
@@ -399,7 +423,11 @@ function tryParsePlainOptions(lines, startIdx) {
     while (/^\d+[\.\)]\s*/.test(r)) r = r.replace(/^\d+[\.\)]\s*/, '');
     return r.trim();
   };
-  let options = optLines.map(o => stripNumericPrefixes(o.text));
+  let options = optLines.map(o => {
+    const t = stripNumericPrefixes(o.text);
+    // Also strip letter prefix if present (e.g. "a. Option text" → "Option text")
+    return t.replace(MCQ_OPTION_RE, '');
+  });
   if (absorbedOpt) {
     options = [stripNumericPrefixes(absorbedOpt), ...options];
   }
