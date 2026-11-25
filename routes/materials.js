@@ -4,7 +4,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const mammoth = require('mammoth');
-const { PDFParse } = require('pdf-parse');
 const db = require('../db');
 const { authMiddleware, adminMiddleware } = require('../middleware');
 
@@ -108,10 +107,44 @@ async function parseDocx(filePath) {
 }
 
 async function parsePdf(filePath) {
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
   const buf = new Uint8Array(fs.readFileSync(filePath));
-  const parser = new PDFParse(buf);
-  const data = await parser.getText();
-  return data.text;
+  const standardFontDataUrl = path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'standard_fonts')
+    .split(path.sep).join('/') + '/';
+
+  const doc = await pdfjs.getDocument({ data: buf, standardFontDataUrl }).promise;
+  const lines = [];
+  // Raised glyphs (superscripts) are often used for degree signs / exponents.
+  const superscripts = { '0': '°', '1': '¹', '2': '²', '3': '³', 'n': 'ⁿ' };
+  try {
+    for (let p = 1; p <= doc.numPages; p++) {
+      const page = await doc.getPage(p);
+      const content = await page.getTextContent();
+      let line = '';
+      let prev = null;
+      for (const item of content.items) {
+        const str = item.str || '';
+        const size = Math.hypot(item.transform[0], item.transform[1]);
+        const y = item.transform[5];
+        let text = str;
+        if (prev && str && size > 0 && size < prev.size * 0.85 && y > prev.y + prev.size * 0.15) {
+          text = [...str].map(ch => superscripts[ch] || ch).join('');
+        }
+        line += text;
+        if (item.hasEOL) {
+          lines.push(line);
+          line = '';
+          prev = null;
+        } else if (str.trim()) {
+          prev = { size, y };
+        }
+      }
+      if (line.trim()) lines.push(line);
+    }
+  } finally {
+    await doc.destroy();
+  }
+  return lines.join('\n');
 }
 
 async function parseFile(filePath, ext) {
@@ -209,6 +242,16 @@ function extractQuestions(text) {
   return questions;
 }
 
+function stripLeadingNumberPrefix(text) {
+  let s = text;
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(/^[\*_]*(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/i, '').replace(/[\*_]+$/, '');
+  } while (s !== prev);
+  return s;
+}
+
 function parseMCQ(lines, startIdx) {
   let question = lines[startIdx];
   if (question.length < 10) return null;
@@ -218,8 +261,7 @@ function parseMCQ(lines, startIdx) {
   const hadPrefix = /^\d+[\.\)]/.test(stripped);
 
   // Strip leading formatting markers + number prefix + trailing markers
-  question = question.replace(/^[\*_]*(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '')
-    .replace(/[\*_]+$/, '');
+  question = stripLeadingNumberPrefix(question);
 
   // Skip section headers (SECTION A:, PART I:, etc.)
   if (/^(?:SECTION|PART|UNIT|TOPIC|CHAPTER)\s/i.test(question)) return null;
@@ -336,7 +378,7 @@ function tryParsePlainOptions(lines, startIdx) {
   if (!looksLikeQuestion(question)) return null;
 
   // Strip any leading number prefix from question (e.g. "5. All the following…" → "All the following…")
-  question = question.replace(/^[\*_]*(?:\s*(?:Question\s*)?\d+[\.\)]\s*)?/, '').replace(/[\*_]+$/, '').trim();
+  question = stripLeadingNumberPrefix(question).trim();
 
   // Detect an absorbed first option fused onto the question line.
   // Three patterns:
@@ -641,3 +683,6 @@ router.post('/generate-quiz', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.extractQuestions = extractQuestions;
+module.exports.htmlToPlainText = htmlToPlainText;
+module.exports.parseFile = parseFile;
