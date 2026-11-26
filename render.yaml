@@ -2,7 +2,7 @@ services:
   - type: web
     name: fastbrain-quiz
     runtime: node
-    buildCommand: npm install
+    buildCommand: npm install && npm run seed
     startCommand: npm start
     envVars:
       - key: NODE_ENV
