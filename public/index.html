@@ -186,15 +186,12 @@ body{background:var(--bg);color:var(--text);font-family:'Schibsted Grotesk',sans
       <form id="auth-form" onsubmit="return handleAuth(event)">
         <label for="auth-email">Email</label>
         <input type="email" id="auth-email" placeholder="your@email.com" required>
-        <label for="auth-username" id="auth-username-label" style="display:none">Username</label>
-        <input type="text" id="auth-username" placeholder="Choose a username" style="display:none">
+        
         <label for="auth-pass">Password</label>
         <input type="password" id="auth-pass" placeholder="Enter password" required minlength="4">
         <button class="auth-btn" id="auth-submit-btn" type="submit">Sign In</button>
       </form>
-      <p class="auth-link" id="auth-toggle">
-        Don't have an account? <a onclick="toggleAuthMode()">Create one</a>
-      </p>
+      
     </div>
   </div>
 
@@ -311,7 +308,7 @@ function fmt(text) {
     .replace(/\*(.*?)\*/g, '<em>$1</em>');
 }
 
-let state = { user: null, token: null, isLogin: true, subject: null, quiz: null, questions: [], currentQ: 0, score: 0, answers: [], answered: false, timerInt: null, graded: [] };
+let state = { user: null, token: null, subject: null, quiz: null, questions: [], currentQ: 0, score: 0, answers: [], answered: false, timerInt: null, graded: [] };
 
 function getToken() { return localStorage.getItem('token'); }
 function setToken(t) { if (t) localStorage.setItem('token', t); else localStorage.removeItem('token'); }
@@ -341,32 +338,16 @@ function renderUserBar() {
   }
 }
 
-function toggleAuthMode() {
-  state.isLogin = !state.isLogin;
-  document.getElementById('auth-title').textContent = state.isLogin ? 'Welcome Back' : 'Create Account';
-  document.getElementById('auth-sub').textContent = state.isLogin ? 'Sign in to continue your studies' : 'Join JHS QuizMaster today';
-  document.getElementById('auth-submit-btn').textContent = state.isLogin ? 'Sign In' : 'Create Account';
-  document.getElementById('auth-toggle').innerHTML = state.isLogin ? 'Don\'t have an account? <a onclick="toggleAuthMode()">Create one</a>' : 'Already have an account? <a onclick="toggleAuthMode()">Sign in</a>';
-  document.getElementById('auth-username-label').style.display = state.isLogin ? 'none' : 'block';
-  document.getElementById('auth-username').style.display = state.isLogin ? 'none' : 'block';
-  document.getElementById('auth-error').textContent = '';
-}
+
 
 async function handleAuth(e) {
   e.preventDefault();
   const email = document.getElementById('auth-email').value;
   const password = document.getElementById('auth-pass').value;
-  const username = document.getElementById('auth-username').value;
   const errEl = document.getElementById('auth-error');
   errEl.textContent = '';
   try {
-    let data;
-    if (state.isLogin) {
-      data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-    } else {
-      if (!username) { errEl.textContent = 'Username is required'; return; }
-      data = await api('/auth/register', { method: 'POST', body: JSON.stringify({ email, username, password }) });
-    }
+    const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     setToken(data.token);
     state.user = data.user;
     renderUserBar();

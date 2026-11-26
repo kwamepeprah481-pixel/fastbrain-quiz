@@ -4,29 +4,6 @@ const router = express.Router();
 const db = require('../db');
 const { generateToken, authMiddleware } = require('../middleware');
 
-router.post('/register', async (req, res) => {
-  try {
-    const { email, username, password } = req.body;
-    if (!email || !username || !password) {
-      return res.status(400).json({ error: 'Email, username and password are required' });
-    }
-    if (password.length < 4) {
-      return res.status(400).json({ error: 'Password must be at least 4 characters' });
-    }
-    const existing = await db.get('SELECT id FROM users WHERE email = ? OR username = ?', [email, username]);
-    if (existing) {
-      return res.status(409).json({ error: 'Email or username already exists' });
-    }
-    const hash = await bcrypt.hash(password, 10);
-    await db.run('INSERT INTO users (email, username, password, role) VALUES (?, ?, ?, ?)', [email, username, hash, 'user']);
-    const user = await db.get('SELECT id, email, username, role FROM users WHERE email = ?', [email]);
-    const token = generateToken(user);
-    res.status(201).json({ user, token });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
