@@ -102,5 +102,16 @@ D. Mars`;
 const qs6 = run('Bold question', bold);
 check('Bold question parsed', qs6.length === 1 && qs6[0].q === 'Which planet is closest to the sun?', JSON.stringify(qs6[0]?.q));
 
+// 7. Inline options where the next question's option text contains the word
+// "key" must not swallow that question via the answer-key lookahead.
+const keyWord = `37. 'Thin' begins with the same consonant sound as ______.
+A. three     B. those     C. there     D. then
+
+38. 'Kite' begins with the same initial consonant sound as ______.
+A. sugar     B. city     C. key     D. giant`;
+const qs7 = run('Option word "key" lookahead', keyWord);
+check('Option "key" keeps both questions', qs7.length === 2, `got ${qs7.length}`);
+check('Option "key" Q2 is the kite question', JSON.stringify(qs7[1]?.o) === JSON.stringify(['sugar', 'city', 'key', 'giant']), JSON.stringify(qs7[1]?.o));
+
 console.log(`\n${failures === 0 ? 'ALL PASS' : failures + ' FAILURE(S)'}`);
 process.exit(failures === 0 ? 0 : 1);

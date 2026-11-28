@@ -311,10 +311,13 @@ function parseMCQ(lines, startIdx) {
 
   if (options.length !== 4) return null;
 
-  // Look for answer key within next few lines
+  // Look for answer key within next few lines, but never scan into the next
+  // question. Otherwise a following question's option text (e.g. "C. key")
+  // can falsely match MCQ_ANSWER_RE and cause that question to be swallowed.
   let answer = -1;
   for (let k = idx; k < Math.min(idx + 5, lines.length); k++) {
     if (!lines[k]) continue;
+    if (/^\d+[\.\)]\s+\S/.test(lines[k])) break;
     const m = lines[k].match(MCQ_ANSWER_RE);
     if (m) {
       const letter = m[1].toUpperCase();
