@@ -284,7 +284,9 @@ function parseMCQ(lines, startIdx) {
   if (options.length !== 4) {
     const inlineOpts = tryParseInlineOptions(lines, startIdx);
     if (inlineOpts) {
-      if (inlineOpts.question) question = inlineOpts.question;
+      if (inlineOpts.question !== undefined) {
+        question = inlineOpts.question;
+      }
       options = inlineOpts.options;
       idx = inlineOpts.nextIndex;
     }
@@ -301,7 +303,8 @@ function parseMCQ(lines, startIdx) {
   }
 
   // Reject instruction lines (not real questions)
-  if (!hadPrefix && !question.includes('?')) {
+  // Relaxed: if we actually found 4 options, it's likely a question even if it looks like an instruction
+  if (!hadPrefix && !question.includes('?') && options.length !== 4) {
     const qLower = question.toLowerCase();
     if (/^(?:choose|select|read|answer|use|write|complete|fill|match|note|instruction|direction)/i.test(question) || /(?:choose the|from the options|for each)/i.test(qLower)) return null;
   }
@@ -320,6 +323,13 @@ function parseMCQ(lines, startIdx) {
     }
   }
 
+  // Strip leading letter option prefixes from question when options were extracted inline.
+  // e.g. "A. their B. themselves C. them D. theirs" → "their B. themselves C. them D. theirs"
+  // Only strip when we have 4 options and the question still has a leading letter+dot+space pattern.
+  if (options.length === 4 && /^[A-Da-d][\.\)]\s*/.test(question)) {
+    question = question.replace(/^[A-Da-d][\.\)]\s*/, '');
+  }
+
   return { question, options, answer, nextIndex: idx };
 }
 
@@ -327,6 +337,7 @@ function tryParseInlineOptions(lines, startIdx) {
   let line = lines[startIdx];
   let question = line;
   let nextIdx = startIdx + 1;
+  while (nextIdx < lines.length && !lines[nextIdx]) nextIdx++;
 
   let matches = [...line.matchAll(MCQ_OPTION_RE_G)];
   if (matches.length >= 4) {
